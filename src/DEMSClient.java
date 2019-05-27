@@ -8,12 +8,22 @@ import java.io.*;
 public class DEMSClient {
 	public static void main(String[] args) {
 		try {
-	         
-	      } 
-	      catch (Exception e) {
-	         System.out.println("Exception in DEMSClient: " + e);
-	      } 
-
+			String userID;
+			InputStreamReader is = new InputStreamReader(System.in);
+			BufferedReader br = new BufferedReader(is);
+			System.out.println("Please enter your ID:");
+			userID = br.readLine().trim().toUpperCase();
+			
+			if (userID.charAt(3)=='M') {
+				//is manager role
+			} else if (userID.charAt(3)=='C') {
+				//is customer role
+			}
+				
+		} 
+		catch (Exception e) {
+			System.out.println("Exception in DEMSClient: " + e);
+		} 
 	}
 
 }
