@@ -1,4 +1,17 @@
+import java.rmi.*;
+import java.rmi.server.*;
 
-public class DEMSImpl {
+/**
+ * This class implements the remote interface DEMSInterface.
+ */
 
+public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface{
+	public DEMSImpl() throws RemoteException {
+		super( );
+	}
+	
+	public void addEvent(String eventID, String eventType, int bookingCapacity) throws RemoteException {
+		
+		
+	}
 }
