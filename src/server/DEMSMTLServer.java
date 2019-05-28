@@ -1,5 +1,6 @@
+package server;
 
-public class DEMSOTWServer {
+public class DEMSMTLServer {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

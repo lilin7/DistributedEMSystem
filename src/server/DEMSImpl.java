@@ -1,11 +1,13 @@
+package server;
+
 import java.rmi.*;
 import java.rmi.server.*;
 
 /**
- * This class implements the remote interface DEMSInterface.
+ * This class implements the remote interface server.DEMSInterface.
  */
 
-public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface{
+public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	public DEMSImpl() throws RemoteException {
 		super( );
 	}

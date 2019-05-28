@@ -1,3 +1,5 @@
+package server;
+
 import java.rmi.*;
 /**
  * This is a remote interface.
