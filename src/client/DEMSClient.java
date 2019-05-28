@@ -1,5 +1,4 @@
 package client;
-
 import java.io.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -15,14 +14,11 @@ import server.DEMSInterface;
 public class DEMSClient {
 
 	private String userID;
-
 	private String location;
 	private String lookUpServerName;
 	private String roll;
 	private String number;
-
 	private DEMSInterface obj;
-
 	private int portNumber;
 
 	public static void main(String[] args){
@@ -68,7 +64,6 @@ public class DEMSClient {
 		Registry registry = LocateRegistry.getRegistry(portNumber);
 		obj = (DEMSInterface) registry.lookup(lookUpServerName);
 
-
 		if(roll.equals("M")){
 			managerOperate();
 		}else if(roll.equals("C")){
@@ -76,8 +71,6 @@ public class DEMSClient {
 		}else{
 			System.out.println("wrong id");
 		}
-
-
 	}
 
 	private void managerOperate(){
@@ -93,11 +86,6 @@ public class DEMSClient {
 				case 2:
 					break;
 			}
-
-
-
-
-
 		}
 	}
 
@@ -114,18 +102,11 @@ public class DEMSClient {
 				case 2:
 					break;
 			}
-
-
-
 		}
 	}
-
-
 
 	public void log(){
 
 	}
-
-
 
 }
