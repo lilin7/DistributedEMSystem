@@ -15,35 +15,35 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		super( );
 	}
 	
-	public void addEvent(String MID,String eventID, String eventType, int bookingCapacity) throws RemoteException {
-
+	public boolean addEvent(String MID,String eventID, String eventType, int bookingCapacity) throws RemoteException {
 		
+		return true; //return true if action success
 	}
 
-	public void removeEvent(String MID , String eventID, String eventType) throws RemoteException{
+	public boolean removeEvent(String MID , String eventID, String eventType) throws RemoteException{
 
-
+		return true;//return true if action success
 	}
-	public void listEventAvailability(String EventType) throws RemoteException{
+	public boolean listEventAvailability(String EventType) throws RemoteException{
 
 
-
+		return true;//return true if action success
 	}
-	public void bookEvent (String customerID,String eventID, String eventType) throws RemoteException{
+	public boolean bookEvent(String customerID,String eventID, String eventType) throws RemoteException{
 
 
-
+		return true;//return true if action success
 	}
 
-	public void getBookingSchedule(String customerID)throws RemoteException{
+	public boolean getBookingSchedule(String customerID)throws RemoteException{
 
 
-
+		return true;//return true if action success
 	}
-	public void cancelEvent(String customerID,String eventID)throws RemoteException{
+	public boolean cancelEvent(String customerID,String eventID)throws RemoteException{
 
 
-
+		return true;//return true if action success
 	}
 
 }
