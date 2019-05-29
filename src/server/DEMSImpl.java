@@ -13,14 +13,28 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	//hashmap
 	//hashmap(id, number)
 
-	private HashMap<String,Integer> subHashMap = new HashMap<String,Integer>();
-	private HashMap<String, HashMap<String,Integer>> mainHashMap = new HashMap<String,HashMap<String,Integer>>();
+	private HashMap<String,Integer> conferencesSubHashMap;
+	private HashMap<String,Integer> seminarsSubHashMap;
+	private HashMap<String,Integer> tradeShowsSubHashMap;
 
-	private HashMap<String, ArrayList<String>> CEOtherCity = new HashMap<>();
+	private HashMap<String, HashMap<String,Integer>> mainHashMap;
+
+	private HashMap<String, ArrayList<String>> CEOtherCity;
 
 	public DEMSImpl() throws RemoteException {
-		
 		super( );
+		conferencesSubHashMap = new HashMap<String,Integer>();
+		seminarsSubHashMap = new HashMap<String,Integer>();
+		tradeShowsSubHashMap = new HashMap<String,Integer>();
+
+		mainHashMap = new HashMap<String,HashMap<String,Integer>>();
+
+		mainHashMap.put("Conferences",conferencesSubHashMap);
+		mainHashMap.put("Seminars",seminarsSubHashMap);
+		mainHashMap.put("TradeShows",tradeShowsSubHashMap);
+
+		CEOtherCity = new HashMap<String,ArrayList<String>>();
+
 	}
 	
 	public boolean addEvent(String MID,String eventID, String eventType, int bookingCapacity) throws RemoteException {
