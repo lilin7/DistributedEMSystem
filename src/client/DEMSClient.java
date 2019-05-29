@@ -5,6 +5,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
+import com.sun.xml.internal.bind.v2.TODO;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import server.DEMSInterface;
 
 /**
@@ -24,11 +26,38 @@ public class DEMSClient {
 
 	public static void main(String[] args){
 		try {
-			String userID;
+			String userID = "";
+			boolean IDFlag = false;
 			InputStreamReader is = new InputStreamReader(System.in);
 			BufferedReader br = new BufferedReader(is);
-			System.out.println("Please enter your ID:");
-			userID = br.readLine().trim().toUpperCase();
+
+			while(!IDFlag){
+				IDFlag = true;
+				System.out.println("Please enter your ID:");
+				userID = br.readLine().trim().toUpperCase();
+
+				String lo = userID.substring(0,3).toUpperCase();
+				if (!(lo.equals("MTL")||lo.equals("OTW")||lo.equals("TOR"))) {
+					IDFlag = false;
+				}
+				String ro = userID.substring(3,4).toUpperCase();
+				if (!(ro.equals("M")||ro.equals("C"))){
+					IDFlag = false;
+				}
+				String nu = userID.substring(4).toUpperCase();
+				if (nu.length() != 4) {
+					IDFlag = false;
+				}
+				for(int i = 0; i<nu.length();i++){
+					if(!Character.isDigit(nu.charAt(i))){
+						IDFlag = false;
+					}
+				}
+			}
+
+
+
+
 
 			DEMSClient newclient = new DEMSClient();
 
@@ -109,8 +138,10 @@ public class DEMSClient {
 					if(result) {
 						System.out.println("Successfully add an event. \n Event ID: " + eventID +"; "
 								+ "Event type: " + eventType + "; Booking capacity: " + bookingCapacity);
+						//TODO: log
 					}else {
 						System.out.println("Failed in adding an event");
+						//TODO:log
 					}
 					break;
 				}
@@ -241,10 +272,12 @@ public class DEMSClient {
 					
 					if(result) {
 						System.out.println("Success");
+						//TODO:log
 					}
 						
 					else {
 						System.out.println("Fail");
+						//TODO:log
 					}
 					break;
 				}
