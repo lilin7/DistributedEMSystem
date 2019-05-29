@@ -99,17 +99,19 @@ public class DEMSClient {
 					System.out.println("Now performing: Add an event.");
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
-					System.out.println("Please enter event Type: C for Conference, T for Trade shows, S for Seminars");
+					System.out.println("Please enter event type: C for Conference, T for Trade shows, S for Seminars");
 					String eventType = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter a number for Booking Capacity:");
 					int bookingCapacity = Integer.parseInt(sc.nextLine().trim());
 					
 					result = obj.addEvent(userID, eventID, eventType, bookingCapacity);
 					
-					if(result)
-						System.out.println("Success");
-					else
-						System.out.println("Fail");
+					if(result) {
+						System.out.println("Successfully add an event. \n Event ID: " + eventID +"; "
+								+ "Event type: " + eventType + "; Booking capacity: " + bookingCapacity);
+					}else {
+						System.out.println("Failed in adding an event");
+					}
 					break;
 				}
 				case 2:{
@@ -121,10 +123,14 @@ public class DEMSClient {
 					
 					result = obj.removeEvent(userID, eventID, eventType);
 					
-					if(result)
-						System.out.println("Success");
-					else
-						System.out.println("Fail");
+					if(result) {
+						System.out.println("Successfully remove an event. \n "
+								+ "Event ID: " + eventID + "Event type: " + eventType);
+						//TODO: add log for this user
+					}else {
+						System.out.println("Failed in removing an event");
+						//TODO: add log for this user
+					}
 					break;
 				}
 				case 3:{
@@ -134,10 +140,13 @@ public class DEMSClient {
 					
 					result = obj.listEventAvailability(eventType);
 					
-					if(result)
-						System.out.println("Success");
-					else
-						System.out.println("Fail");		
+					if(result) {
+						System.out.println("Successfully list event availability.");
+						//TODO: add log for this user
+					}else {
+						System.out.println("Failed in listing event availability");
+						//TODO: add log for this user
+					}
 					break;
 				}
 				case 4:{					
@@ -151,10 +160,13 @@ public class DEMSClient {
 									
 					result = obj.bookEvent(customerID, eventID, eventType);
 					
-					if(result)
+					if(result) {
 						System.out.println("Success");
-					else
-						System.out.println("Fail");		
+						//TODO: add log for this user
+					}else {
+						System.out.println("Fail");
+						//TODO: add log for this user
+					}
 					break;
 				}
 				case 5:{
@@ -164,10 +176,13 @@ public class DEMSClient {
 					
 					result = obj.getBookingSchedule(customerID);
 					
-					if(result)
+					if(result) {
 						System.out.println("Success");
-					else
-						System.out.println("Fail");						
+						//TODO: add log for this user
+					}else {
+						System.out.println("Fail");
+						//TODO: add log for this user
+					}
 					break;
 				}
 				case 6:{
@@ -179,10 +194,13 @@ public class DEMSClient {
 					
 					result = obj.cancelEvent(customerID, eventID);
 					
-					if(result)
+					if(result) {
 						System.out.println("Success");
-					else
-						System.out.println("Fail");						
+						//TODO: add log for this user
+					}else {
+						System.out.println("Fail");
+						//TODO: add log for this user
+					}
 					break;
 				}
 				case 0:
@@ -221,10 +239,13 @@ public class DEMSClient {
 									
 					result = obj.bookEvent(userID, eventID, eventType);
 					
-					if(result)
+					if(result) {
 						System.out.println("Success");
-					else
-						System.out.println("Fail");		
+					}
+						
+					else {
+						System.out.println("Fail");
+					}
 					break;
 				}
 				case 2:{
@@ -232,10 +253,13 @@ public class DEMSClient {
 					
 					result = obj.getBookingSchedule(userID);
 					
-					if(result)
+					if(result) {
 						System.out.println("Success");
-					else
-						System.out.println("Fail");						
+						//TODO: add log for this user
+					}else {
+						System.out.println("Fail");
+						//TODO: add log for this user
+					}
 					break;
 				}
 				case 3:{
@@ -245,10 +269,13 @@ public class DEMSClient {
 					
 					result = obj.cancelEvent(userID, eventID);
 					
-					if(result)
+					if(result) {
 						System.out.println("Success");
-					else
-						System.out.println("Fail");						
+						//TODO: add log for this user
+					}else {
+						System.out.println("Fail");
+						//TODO: add log for this user
+					}
 					break;
 				}
 				case 0:
