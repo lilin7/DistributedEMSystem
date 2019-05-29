@@ -5,8 +5,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
-import com.sun.xml.internal.bind.v2.TODO;
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import server.DEMSInterface;
 
 /**

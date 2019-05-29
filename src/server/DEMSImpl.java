@@ -19,6 +19,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	private HashMap<String, ArrayList<String>> CEOtherCity = new HashMap<>();
 
 	public DEMSImpl() throws RemoteException {
+		
 		super( );
 	}
 	
