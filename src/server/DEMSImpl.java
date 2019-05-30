@@ -257,6 +257,12 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	public boolean getBookingSchedule(String customerID){
 		// push a add event message to the processing queue.
 		// wait that the message is processed
+		
+		//get the booking record in customer's own city
+		ArrayList<String> tempEventTypeAndId = cBookingRecord.get(customerID);
+		
+		for (String s : tempEventTypeAndId) {			
+		}
 		//TODO:print
 		return true;//return true if action success
 	}

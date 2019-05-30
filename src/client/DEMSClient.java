@@ -105,7 +105,7 @@ public class DEMSClient {
 		do {
 			System.out.print(
 					"Current User: Manager " + userID + "\n"
-					+"Please input a number to select action:"
+					+"Please input a number to select action: \n"
 					+"1. Add an event  \n"
 					+"2. Remove and event \n"
 					+"3. List event availability \n"
@@ -149,8 +149,8 @@ public class DEMSClient {
 					System.out.println("Now performing: Remove an event.");
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
-					System.out.println("Please enter event Type: C for Conference, T for Trade shows, S for Seminars");
-					String eventType = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
+					String eventType = sc.nextLine().trim();
 					
 					try {
 						result = obj.removeEvent(userID, eventID, eventType);
@@ -170,8 +170,8 @@ public class DEMSClient {
 				}
 				case 3:{
 					System.out.println("Now performing: List event availability.");
-					System.out.println("Please enter event Type: C for Conference, T for Trade shows, S for Seminars");
-					String eventType = sc.nextLine().trim().toUpperCase();	
+					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
+					String eventType = sc.nextLine().trim();	
 					
 					try {
 						result = obj.listEventAvailability(userID, eventType);
@@ -196,8 +196,8 @@ public class DEMSClient {
 					String customerID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
-					System.out.println("Please enter event Type: C for Conference, T for Trade shows, S for Seminars");
-					String eventType = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
+					String eventType = sc.nextLine().trim();
 									
 					result = obj.bookEvent(customerID, eventID, eventType);
 					
@@ -215,7 +215,7 @@ public class DEMSClient {
 					System.out.println("Please enter customer ID: (format example: TORC2345)");
 					String customerID = sc.nextLine().trim().toUpperCase();
 					
-					result = obj.getBookingSchedule(customerID);
+					result = obj.getBookingSchedule(customerID);									
 					
 					if(result) {
 						System.out.println("Success");
@@ -279,8 +279,8 @@ public class DEMSClient {
 					System.out.println("Now performing: Book an event.");
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
-					System.out.println("Please enter event Type: C for Conference, T for Trade shows, S for Seminars");
-					String eventType = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
+					String eventType = sc.nextLine().trim();
 							
 					try {
 						result = obj.bookEvent(userID, eventID, eventType);
