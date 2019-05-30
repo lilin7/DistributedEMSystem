@@ -5,7 +5,7 @@ import java.rmi.registry.Registry;
 
 public class DEMSMTLServer {
 	public static void main(String[] args) throws Exception{
-		int localRMIPortNumber = 1000;
+		int localRMIPortNumber = DEMSInterface.PORT_MTL;
 
 		DEMSImpl stub = new DEMSImpl();
 		Registry registry = LocateRegistry.createRegistry(localRMIPortNumber);

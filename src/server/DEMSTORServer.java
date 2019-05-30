@@ -5,7 +5,7 @@ import java.rmi.registry.Registry;
 
 public class DEMSTORServer{
 	public static void main(String[] args) throws Exception {
-		int localRMIPortNumber = 1002;
+		int localRMIPortNumber = DEMSInterface.PORT_TOR;
 		
 		DEMSImpl stub = new DEMSImpl();
 		Registry registry = LocateRegistry.createRegistry(localRMIPortNumber);
