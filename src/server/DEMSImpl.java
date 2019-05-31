@@ -76,7 +76,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			returnMessage.add("New event added.");
 			//TODO write log into this manager
 			return returnMessage;
-		} else { // If an event already exists for same event type, the event manager can¡¯t add it again for the same event type but the new bookingCapacity is updated
+		} else { // If an event already exists for same event type, the event manager can't add it again for the same event type but the new bookingCapacity is updated
 			ArrayList<Integer> tempCapArrayList = mainHashMap.get(eventType).get(eventID);
 			if (bookingCapacity < tempCapArrayList.get(1)) {
 				returnMessage.add("Fail");
