@@ -1,5 +1,10 @@
 package server;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.util.ArrayList;
@@ -30,11 +35,19 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	// a customer can book at most 3 events from other cities overall in a month
 	private HashMap<String, HashMap<String, Integer>> cBookingOtherCity = new HashMap<String, HashMap<String, Integer>> ();
 
-	public DEMSImpl() throws RemoteException {
+
+	//remote udp port for request other servers
+	private int firstRemoteUDPPort;
+	private int secondRemoteUDPPort;
+
+	public DEMSImpl(int firstRemoteUDPPort,int secondRemoteUDPPort) throws RemoteException {
 		super();
 		mainHashMap.put("Conferences",conferencesSubHashMap);
 		mainHashMap.put("Seminars",seminarsSubHashMap);
 		mainHashMap.put("TradeShows",tradeShowsSubHashMap);
+
+		this.firstRemoteUDPPort = firstRemoteUDPPort;
+		this.secondRemoteUDPPort = secondRemoteUDPPort;
 		
 		// TODO start a UDP socket (use unused port like 1031-3) in accept, in another thread
         // TODO open UPD socket on others
@@ -300,5 +313,69 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 		return true;//return true if action success
 	}
+
+	@Override
+	public String listEventAvailabilityForUDP() throws Exception {
+		//TODO:get what is needed
+		return null;
+	}
+
+	@Override
+	public String bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
+		//TODO:get what is needed
+		return null;
+	}
+
+	@Override
+	public String getBookingScheduleForUDP(String customerID) throws Exception {
+		//TODO:get what is needed
+		return null;
+	}
+
+	@Override
+	public String cancelEventForUDP(String customerID, String eventID) throws Exception {
+		//TODO:get what is needed
+		return null;
+	}
+
+
+
+	//TODO:ask request template
+		/*DatagramSocket aSocket = null;
+		String result ="";
+		try{
+			System.out.println("asking request");
+			aSocket = new DatagramSocket(); //reference of the original socket
+
+			String messageToSend  =  "";//the message you want to send
+
+			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+
+			InetAddress aHost = InetAddress.getByName("localhost");
+
+			int serverPort = firstRemoteUDPPort;// don't forget the second server
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			aSocket.send(request);//request sent out
+			System.out.println("Request message sent : "+ new String(request.getData()));
+
+			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
+			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
+
+			//Client waits until the reply is received-----------------------------------------------------------------------
+			aSocket.receive(reply);//reply received and will populate reply packet now.
+			result = new String(reply.getData());
+			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
+		}
+		catch(SocketException e){
+		System.out.println("Socket: "+e.getMessage());
+		}
+		catch(IOException e){
+		e.printStackTrace();
+		System.out.println("IO: "+e.getMessage());
+		}
+		finally{
+		if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
+		//resource leakage, therefore, close the socket after it's use is completed to release resources.
+		}*/
 
 }
