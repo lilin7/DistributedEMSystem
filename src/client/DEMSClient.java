@@ -3,6 +3,7 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import server.DEMSInterface;
@@ -128,20 +129,24 @@ public class DEMSClient {
 					System.out.println("Please enter a number for Booking Capacity:");
 					int bookingCapacity = Integer.parseInt(sc.nextLine().trim());
 					
+					ArrayList<String> returnMessage = new ArrayList<String>();
 					//handle RMI exception PER action, and try to bounce back for a better error handling.
 					try {
-						result = obj.addEvent(userID, eventID, eventType, bookingCapacity);
+						returnMessage = obj.addEvent(userID, eventID, eventType, bookingCapacity);
 					} catch (java.rmi.RemoteException e) {
-						result = false;
+						
 					}
 					
-					if(result) {
+					if(returnMessage.get(0).equals("Added")) {						
 						System.out.println("Successfully add an event. \n Event ID: " + eventID +"; "
 								+ "Event type: " + eventType + "; Booking capacity: " + bookingCapacity);
 						//TODO: log
-					}else {
+					}else if (returnMessage.get(0).equals("Fail")) {
 						System.out.println("Failed in adding an event");
+						System.out.println("Event already exist and the new booking capacity you entered is less than space already booked.");						
 						//TODO:log
+					} else if (returnMessage.get(0).equals("Updated")) {
+						System.out.println("Event exists, no new event added. Event capacity updated.");
 					}
 					break;
 				}
@@ -152,18 +157,20 @@ public class DEMSClient {
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();
 					
+					ArrayList<String> returnMessage = new ArrayList<String>();
+					
 					try {
-						result = obj.removeEvent(userID, eventID, eventType);
+						returnMessage = obj.removeEvent(userID, eventID, eventType);
 					} catch (java.rmi.RemoteException e) {
-						result = false;
+
 					}
 					
-					if(result) {
-						System.out.println("Successfully remove an event. \n "
-								+ "Event ID: " + eventID + "Event type: " + eventType);
+					if(returnMessage.get(0).equals("NoExist")) {
+						System.out.println("Failed in removing an event, no such event exist.");
 						//TODO: add log for this user
-					}else {
-						System.out.println("Failed in removing an event");
+					}else if (returnMessage.get(0).equals("Success")){											
+						System.out.println("Successfully removed an event. \n "
+								+ "Event ID: " + eventID + " Event type: " + eventType);
 						//TODO: add log for this user
 					}
 					break;
@@ -173,19 +180,23 @@ public class DEMSClient {
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();	
 					
+					ArrayList<String> returnMessage = new ArrayList<String>();
+					
 					try {
-						result = obj.listEventAvailability(userID, eventType);
+						returnMessage = obj.listEventAvailability(userID, eventType);
 					} catch (java.rmi.RemoteException e) {
 						// look at the connection, if connection is dead ; exit
 						// if connection is okay, notify the client of the error but continue executing
-						result = false;
 					}
 					
-					if(result) {
-						System.out.println("Successfully list event availability.");
+					if(returnMessage.size()!=0) {
+						for (String s : returnMessage) {
+							System.out.println(s);
+						}
+						System.out.println();
 						//TODO: add log for this user
 					}else {
-						System.out.println("Failed in listing event availability");
+						System.out.println("Failed in listing event availability.");
 						//TODO: add log for this user
 					}
 					break;
@@ -198,16 +209,28 @@ public class DEMSClient {
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();
-									
-					result = obj.bookEvent(customerID, eventID, eventType);
 					
-					if(result) {
-						System.out.println("Success");
-						//TODO: add log for this user
-					}else {
-						System.out.println("Fail");
-						//TODO: add log for this user
+					ArrayList<String> returnMessage = new ArrayList<String>();
+					try {			
+						returnMessage = obj.bookEvent(customerID, eventID, eventType);
+					} catch (java.rmi.RemoteException e) {
+						
 					}
+					
+					if(returnMessage.get(0).equals("NoExist")) {
+						System.out.println("Fail. The event you attampt to book doesn't exist.");
+						//TODO: add log for this user
+					}else if (returnMessage.get(0).equals("Full")){
+						System.out.println("Fail. This event is fully booked.");
+						//TODO: add log for this user
+					} else if (returnMessage.get(0).equals("Success")) {
+						System.out.println("You have successfully booked a space in:  \n"
+								+ "Event type: " + eventType + "; Event ID: " + eventID + ".");
+					} else if (returnMessage.get(0).equals("NotUnique")) {
+						System.out.println("Fail. A customer can not book more than one event with the same event id and same event type.");
+					} else if (returnMessage.get(0).equals("Exceed3LimitInOtherCity")) {
+						System.out.println("Fail. A customer can only book at most 3 events from other cities overall in a month.");
+					} 
 					break;
 				}
 				case 5:{
@@ -264,7 +287,7 @@ public class DEMSClient {
 		do {
 			System.out.println(
 					"Current User: Customer " + userID + "\n"
-					+"Please input a number to select action:"
+					+"Please input a number to select action: \n"
 					+"1. Book an event \n"
 					+"2. Get your booking schedule in all cities  \n"
 					+"3. Cancel an event of yours \n"
@@ -276,27 +299,35 @@ public class DEMSClient {
 			
 			switch (user_input) {
 				case 1:{					
-					System.out.println("Now performing: Book an event.");
+					System.out.println("Now performing: Book event for a customer.");
+					System.out.println("Please enter customer ID: (format example: TORC2345)");
+					String customerID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();
-							
-					try {
-						result = obj.bookEvent(userID, eventID, eventType);
+					
+					ArrayList<String> returnMessage = new ArrayList<String>();
+					try {			
+						returnMessage = obj.bookEvent(userID, eventID, eventType);
 					} catch (java.rmi.RemoteException e) {
-						result = false;
+						
 					}
 					
-					if(result) {
-						System.out.println("Success");
-						//TODO:log
-					}
-						
-					else {
-						System.out.println("Fail");
-						//TODO:log
-					}
+					if(returnMessage.get(0).equals("NoExist")) {
+						System.out.println("Fail. The event you attampt to book doesn't exist.");
+						//TODO: add log for this user
+					}else if (returnMessage.get(0).equals("Full")){
+						System.out.println("Fail. This event is fully booked.");
+						//TODO: add log for this user
+					} else if (returnMessage.get(0).equals("Success")) {
+						System.out.println("You have successfully booked a space in:  \n"
+								+ "Event type: " + eventType + "; Event ID: " + eventID + ".");
+					} else if (returnMessage.get(0).equals("NotUnique")) {
+						System.out.println("Fail. A customer can not book more than one event with the same event id and same event type.");
+					} else if (returnMessage.get(0).equals("Exceed3LimitInOtherCity")) {
+						System.out.println("Fail. A customer can only book at most 3 events from other cities overall in a month.");
+					} 
 					break;
 				}
 				case 2:{
