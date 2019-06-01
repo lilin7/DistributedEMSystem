@@ -28,18 +28,24 @@ public class DEMSThread extends Thread{
             byte[] buffer = new byte[1000];
             System.out.println("Server UDP Listen Started");
             while (true) {
-                DatagramPacket request = new DatagramPacket(buffer, buffer.length);
-                aSocket.receive(request);
+            	// receive request (can only be String) from other city to act in this city
+                DatagramPacket request = new DatagramPacket(buffer, buffer.length); 
+                aSocket.receive(request); //e.g. TORC1234 getBookingSchedule
                 System.out.println("Request received from client: " + new String(request.getData()));
-
-                String requestToString = new String(request.getData()); //receive message from source city
-                
                 String re = "";
+                String requestToString = new String(request.getData()); //receive message from source city
+                String[] requestSplit = requestToString.split("\\S+");
+                String action = requestSplit[1];
                 //TODO:need change, can split request to get more parameters and finish the task blow
                 if(requestToString.equals("listEventAvailability")){
                     //re = stub.listEventAvailabilityForUDP(param1, param2...);
                 }else if(requestToString.equals("bookEvent")){
-                    //re = stub.bookEventForUDP(param1, param2...);
+                	String customerID = requestSplit[0];
+                    //action = stub.bookEventForUDP(customerID);
+                	// turn ArrayList<String> action to a String, assign to re
+                	re = "";
+                	
+                	
                 }else if(requestToString.equals("getBookingSchedule")){
                     //re = stub.getBookingScheduleForUDP(param1, param2...);
                 }else if(requestToString.equals("cancelEvent")){

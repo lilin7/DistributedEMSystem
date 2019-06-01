@@ -238,7 +238,18 @@ public class DEMSClient {
 					System.out.println("Please enter customer ID: (format example: TORC2345)");
 					String customerID = sc.nextLine().trim().toUpperCase();
 					
-					result = obj.getBookingSchedule(customerID);									
+					ArrayList<String> returnMessage = new ArrayList<String>();
+					
+					//receive ArrayList<String> of info in all 3 cities. Elements like CTORE100519, need to decode, C means Conferences
+					returnMessage = obj.getBookingSchedule(customerID);		 	
+					
+					for (String s : returnMessage) {				
+						if (s.charAt(0)=='C') {
+							String city = s.substring(1, 4); //get "TOR"
+							String eventType = "Conferences";
+							String eventID = s.substring(1);
+						}					
+					}
 					
 					if(result) {
 						System.out.println("Success");

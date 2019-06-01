@@ -23,7 +23,7 @@ public interface DEMSInterface extends Remote {
 
 	   public ArrayList<String> bookEvent (String customerID,String eventID, String eventType) throws java.rmi.RemoteException;
 
-	   public boolean getBookingSchedule(String customerID) throws java.rmi.RemoteException;
+	   public ArrayList<String> getBookingSchedule(String customerID) throws java.rmi.RemoteException;
 
 	   public boolean cancelEvent(String customerID,String eventID) throws java.rmi.RemoteException;
 
@@ -31,7 +31,7 @@ public interface DEMSInterface extends Remote {
 
 		public String listEventAvailabilityForUDP()throws Exception;
 
-		public String bookEventForUDP(String customerID,String eventID,String eventType) throws Exception;
+		public ArrayList<String> bookEventForUDP(String customerID,String eventID,String eventType) throws Exception;
 
 		public String getBookingScheduleForUDP(String customerID) throws Exception;
 

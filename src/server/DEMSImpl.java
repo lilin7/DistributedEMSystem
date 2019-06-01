@@ -210,102 +210,123 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 					}
 				}
 			}
-		} else { // this is to write if this customer wants to book in other cities, need UDP
-			if (!mainHashMap.get(eventType).containsKey(eventID)) { // if the event doesn't exist
-				returnMessage.add("NoExist");
-				returnMessage.add("The event you attampt to book doesn't exist.");
-				return returnMessage;
-			} else { // if the event exists
-				if (! (mainHashMap.get(eventType).get(eventID).get(0) > mainHashMap.get(eventType).get(eventID).get(1))) { // if the capacity left is not enough
-					returnMessage.add("Full");
-					returnMessage.add("This event is fully booked.");
-					return returnMessage;
-				} else { // if there is still space to book	
-					String monthYear = eventID.substring(6,10);
-					if (!cBookingRecord.containsKey(customerID)) { // if this customer never booked before and doesn't exist in database	
-						// add to total booking record
-						ArrayList<String> tempEventTypeAndIDAL =  new ArrayList<String> ();
-						tempEventTypeAndIDAL.add(eventTypeAndID);
-						cBookingRecord.put(customerID, tempEventTypeAndIDAL);
-						
-						// add to booking record other cities
-						HashMap<String, Integer> tempDateNumber =  new HashMap<String, Integer> ();
-						tempDateNumber.put(monthYear, 1);
-						cBookingOtherCity.put(customerID, tempDateNumber);
-						
-						//update space available of this event
-						int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
-						mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
-						
-						returnMessage.add("Success");
-						returnMessage.add("You have successfully booked a space in:  \n"
-								+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
-						return returnMessage;
-					} else { // if this customer booked before and exists
-						if (cBookingRecord.get(customerID).contains(eventTypeAndID)) { // if the event type and ID is not unique
-							returnMessage.add("NotUnique");
-							returnMessage.add("A customer can not book more than one event with the same event id and same event type.");
-							return returnMessage;
-						} else { // if the event type and ID is unique
-							if (! cBookingOtherCity.containsKey(customerID)) { // if customer only booked in own city, never in other cities
-								// update total booking record (by adding this event)
-								cBookingRecord.get(customerID).add(eventTypeAndID);
-								
-								// add to booking record other cities
-								HashMap<String, Integer> tempDateNumber =  new HashMap<String, Integer> ();
-								tempDateNumber.put(monthYear, 1);
-								cBookingOtherCity.put(customerID, tempDateNumber);
-								
-								//update space available of this event
-								int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
-								mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
-								
-								returnMessage.add("Success");
-								returnMessage.add("You have successfully booked a space in:  \n"
-										+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
-								return returnMessage;		
-							} else { // customer already booked in other cities in the past
-								int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(monthYear);
-								if (currentBookingOtherCities <3) { // if less than 3 times in the month of the input event in other cities
-									// update total booking record (by adding this event)
-									cBookingRecord.get(customerID).add(eventTypeAndID);
-									
-									// update booking record in other cities 
-									cBookingOtherCity.get(customerID).put(monthYear, currentBookingOtherCities+1);
-									
-									//update space available of this event
-									int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
-									mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
-									
-									returnMessage.add("Success");
-									returnMessage.add("You have successfully booked a space in:  \n"
-											+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
-									return returnMessage;
-									
-								} else { // if equals to 3 times or more in the month of the input event in other cities
-									returnMessage.add("Exceed3LimitInOtherCity");
-									returnMessage.add("A customer can only book at most 3 events from other cities overall in a month.");
-									return returnMessage;
-								}
-							}
-						}
-					}
-				}
-			}	
+		} else { // TODO this is to write if this customer wants to book in other cities, add UDP communication
+			// send message to target city
+			// get reply
+			// put reply to returnMessage
+			// returnMessage to client
+					
+			return returnMessage;
 		}
 	}
 
-	public boolean getBookingSchedule(String customerID){
+	public ArrayList<String> getBookingSchedule(String customerID){
 		// push a add event message to the processing queue.
 		// wait that the message is processed
 		
-		//get the booking record in customer's own city
-		ArrayList<String> tempEventTypeAndId = cBookingRecord.get(customerID);
+		ArrayList<String> returnMessage = new ArrayList<String>(); // only return when combine info in all cities
 		
-		for (String s : tempEventTypeAndId) {			
+		ArrayList<String> returnMessageOwnCity = cBookingRecord.get(customerID);
+		ArrayList<String> returnMessageFirstOtherCity = new ArrayList<String>();
+		ArrayList<String> returnMessageSecondOtherCity = new ArrayList<String>();
+		
+		// TODO send message to target city 1
+		// get reply
+		// put reply to returnMessageFirstOtherCity
+		DatagramSocket aSocket = null;  //a buffer
+		String result =""; //initialize
+		try{
+			System.out.println("asking request");
+			aSocket = new DatagramSocket(); //reference of the original socket
+
+			String messageToSend  =  customerID + " getBookingSchedule" ;//the message you want to send, e.g. "TORC1234, getBookingSchedule, ..."
+
+			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+
+			InetAddress aHost = InetAddress.getByName("localhost");
+
+			int serverPort = firstRemoteUDPPort;// don't forget the second server in 2 methods: listEventAvailability, getBookingSchedule
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			aSocket.send(request);//request sent out
+			System.out.println("Request message sent : "+ new String(request.getData()));
+			
+			//from here to below: after sending request, receive feedback from target city
+			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
+			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
+
+			//Client waits until the reply is received-----------------------------------------------------------------------
+			aSocket.receive(reply);//reply received and will populate reply packet now.
+			result = new String(reply.getData());
+			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
 		}
-		//TODO:print
-		return true;//return true if action success
+		catch(SocketException e){
+			System.out.println("Socket: "+e.getMessage());
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.out.println("IO: "+e.getMessage());
+		}
+		finally{
+			if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
+			//resource leakage, therefore, close the socket after it's use is completed to release resources.
+		}
+		
+		// TODO send message to target city 2
+		// get reply
+		// put reply to returnMessageSecondOtherCity
+		DatagramSocket bSocket = null;  //a buffer
+		String result2 =""; //initialize
+		try{
+			System.out.println("asking request");
+			bSocket = new DatagramSocket(); //reference of the original socket
+
+			String messageToSend  =  customerID + " getBookingSchedule" ;//the message you want to send, e.g. "TORC1234, getBookingSchedule, ..."
+
+			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+
+			InetAddress aHost = InetAddress.getByName("localhost");
+
+			int serverPort = secondRemoteUDPPort;// don't forget the second server in 2 methods: listEventAvailability, getBookingSchedule
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			bSocket.send(request);//request sent out
+			System.out.println("Request message sent : "+ new String(request.getData()));
+			
+			//from here to below: after sending request, receive feedback from target city
+			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
+			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
+
+			//Client waits until the reply is received-----------------------------------------------------------------------
+			bSocket.receive(reply);//reply received and will populate reply packet now.
+			result2 = new String(reply.getData());
+			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
+		}
+		catch(SocketException e){
+			System.out.println("Socket: "+e.getMessage());
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.out.println("IO: "+e.getMessage());
+		}
+		finally{
+			if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
+			//resource leakage, therefore, close the socket after it's use is completed to release resources.
+		}
+		
+		
+		// put info into ArrayList<String> returnMessageFirstOtherCity and returnMessageSecondOtherCity
+
+		// combine info in all 3 cities, and reply to client (return a ArrayList<String>, safe
+		for (int i = 0; i<returnMessageOwnCity.size(); i++) {
+			returnMessage.add(returnMessageOwnCity.get(i));
+		}		
+		for (int i = 0; i<returnMessageFirstOtherCity.size(); i++) {
+			returnMessage.add(returnMessageFirstOtherCity.get(i));
+		}		
+		for (int i = 0; i<returnMessageSecondOtherCity.size(); i++) {
+			returnMessage.add(returnMessageSecondOtherCity.get(i));
+		}
+				
+		return  returnMessage;//return a ArrayList<String> to client, safe
 	}
 	public boolean cancelEvent(String customerID,String eventID){
 		// push a add event message to the processing queue.
@@ -321,9 +342,100 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 
 	@Override
-	public String bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
-		//TODO:get what is needed
-		return null;
+	//book event in my city upon request of other cities
+	public ArrayList<String> bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
+		ArrayList<String> returnMessage = new ArrayList<String>();
+		String eventTypeAndID = eventType.substring(0,1) + "" + eventID;
+		
+		//validate, if book for own city, should not use this method
+		if (customerID.substring(0,3).toUpperCase().equals(eventID.substring(0,3).toUpperCase())) { 
+			returnMessage.add("Fail");
+			returnMessage.add("City confusion");
+			return returnMessage;
+		}
+		
+		 // this is to write if this customer wants to book in other cities, need UDP
+		if (!mainHashMap.get(eventType).containsKey(eventID)) { // if the event doesn't exist
+			returnMessage.add("NoExist");
+			returnMessage.add("The event you attampt to book doesn't exist.");
+			return returnMessage;
+		} else { // if the event exists
+			if (! (mainHashMap.get(eventType).get(eventID).get(0) > mainHashMap.get(eventType).get(eventID).get(1))) { // if the capacity left is not enough
+				returnMessage.add("Full");
+				returnMessage.add("This event is fully booked.");
+				return returnMessage;
+			} else { // if there is still space to book	
+				String monthYear = eventID.substring(6,10);
+				if (!cBookingRecord.containsKey(customerID)) { // if this customer never booked before and doesn't exist in database	
+					// add to total booking record
+					ArrayList<String> tempEventTypeAndIDAL =  new ArrayList<String> ();
+					tempEventTypeAndIDAL.add(eventTypeAndID);
+					cBookingRecord.put(customerID, tempEventTypeAndIDAL);
+					
+					// add to booking record other cities
+					HashMap<String, Integer> tempDateNumber =  new HashMap<String, Integer> ();
+					tempDateNumber.put(monthYear, 1);
+					cBookingOtherCity.put(customerID, tempDateNumber);
+					
+					//update space available of this event
+					int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
+					mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
+					
+					returnMessage.add("Success");
+					returnMessage.add("You have successfully booked a space in:  \n"
+							+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
+					return returnMessage;
+				} else { // if this customer booked before and exists
+					if (cBookingRecord.get(customerID).contains(eventTypeAndID)) { // if the event type and ID is not unique
+						returnMessage.add("NotUnique");
+						returnMessage.add("A customer can not book more than one event with the same event id and same event type.");
+						return returnMessage;
+					} else { // if the event type and ID is unique
+						if (! cBookingOtherCity.containsKey(customerID)) { // if customer only booked in own city, never in other cities
+							// update total booking record (by adding this event)
+							cBookingRecord.get(customerID).add(eventTypeAndID);
+							
+							// add to booking record other cities
+							HashMap<String, Integer> tempDateNumber =  new HashMap<String, Integer> ();
+							tempDateNumber.put(monthYear, 1);
+							cBookingOtherCity.put(customerID, tempDateNumber);
+							
+							//update space available of this event
+							int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
+							mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
+							
+							returnMessage.add("Success");
+							returnMessage.add("You have successfully booked a space in:  \n"
+									+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
+							return returnMessage;		
+						} else { // customer already booked in other cities in the past
+							int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(monthYear);
+							if (currentBookingOtherCities <3) { // if less than 3 times in the month of the input event in other cities
+								// update total booking record (by adding this event)
+								cBookingRecord.get(customerID).add(eventTypeAndID);
+								
+								// update booking record in other cities 
+								cBookingOtherCity.get(customerID).put(monthYear, currentBookingOtherCities+1);
+								
+								//update space available of this event
+								int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
+								mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
+								
+								returnMessage.add("Success");
+								returnMessage.add("You have successfully booked a space in:  \n"
+										+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
+								return returnMessage;
+								
+							} else { // if equals to 3 times or more in the month of the input event in other cities
+								returnMessage.add("Exceed3LimitInOtherCity");
+								returnMessage.add("A customer can only book at most 3 events from other cities overall in a month.");
+								return returnMessage;
+							}
+						}
+					}
+				}
+			}
+		}			
 	}
 
 	@Override
@@ -347,7 +459,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			System.out.println("asking request");
 			aSocket = new DatagramSocket(); //reference of the original socket
 
-			String messageToSend  =  "";//the message you want to send, e.g. "TORC1234, XXXXX, ..."
+			String messageToSend  =  "";//the message you want to send, e.g. "TORC1234, getBookingSchedule, ..."
 
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
 
