@@ -11,9 +11,9 @@ public interface DEMSInterface extends Remote {
 	   public final int PORT_OTW = 1026;
 	   public final int PORT_TOR = 1027;
 
-	   public final int UDP_PORT_MTL = 5050;
-	   public final int UDP_PORT_OTW = 6060;
-	   public final int UDP_PORT_TOR = 7070;
+	   public final int UDP_PORT_MTL = 5555;
+	   public final int UDP_PORT_OTW = 6666;
+	   public final int UDP_PORT_TOR = 7777;
 	
 	   public ArrayList<String> addEvent(String MID,String eventID, String eventType, int bookingCapacity) throws java.rmi.RemoteException;
 
