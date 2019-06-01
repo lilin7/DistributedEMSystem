@@ -233,7 +233,7 @@ public class DEMSClient {
 					} 
 					break;
 				}
-				case 5:{
+				case 5:{ //done this case of manager
 					System.out.println("Now performing: Get booking schedule of a customer.");
 					System.out.println("Please enter customer ID: (format example: TORC2345)");
 					String customerID = sc.nextLine().trim().toUpperCase();
@@ -241,22 +241,50 @@ public class DEMSClient {
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					
 					//receive ArrayList<String> of info in all 3 cities. Elements like CTORE100519, need to decode, C means Conferences
-					returnMessage = obj.getBookingSchedule(customerID);		 	
+					returnMessage = obj.getBookingSchedule(customerID);	
+					System.out.println("Now printing booking schedule for customer " + customerID + ":");
+					System.out.printf("%-15s %-18s %-15s", "City", "Event Type", "Event ID");
+					System.out.println();
 					
-					for (String s : returnMessage) {				
-						if (s.charAt(0)=='C') {
-							String city = s.substring(1, 4); //get "TOR"
-							String eventType = "Conferences";
-							String eventID = s.substring(1);
-						}					
-					}
-					
-					if(result) {
-						System.out.println("Success");
-						//TODO: add log for this user
-					}else {
-						System.out.println("Fail");
-						//TODO: add log for this user
+					for (String s : returnMessage) {	
+						String subStringCity = s.substring(1, 4);
+						String subStringEventType = s.substring(0, 1);
+						String eventID = s.substring(1);
+						
+						if (subStringCity.equals("MTL")) {
+							if (subStringEventType.contentEquals("C")) {		
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("S")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("T")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+								System.out.println();
+							}
+						} else if (subStringCity.equals("TOR")) {
+							if (subStringEventType.contentEquals("C")) {		
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("S")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("T")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+								System.out.println();
+							}
+						} else if (subStringCity.equals("OTW")) {
+							if (subStringEventType.contentEquals("C")) {		
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("S")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("T")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+								System.out.println();
+							}
+						}	
 					}
 					break;
 				}
@@ -341,24 +369,59 @@ public class DEMSClient {
 					} 
 					break;
 				}
-				case 2:{
-					System.out.println("Now performing: Get your booking schedule in all cities.");
+				case 2:{ //done this case of customer
+					System.out.println("Now performing: Get your booking schedule in all cities.");					
+					ArrayList<String> returnMessage = new ArrayList<String>();
 					
-					try {
-						result = obj.getBookingSchedule(userID);
-					} catch (java.rmi.RemoteException e) {
-						result = false;
-					}
+					//receive ArrayList<String> of info in all 3 cities. Elements like CTORE100519, need to decode, C means Conferences
+					returnMessage = obj.getBookingSchedule(userID);	
+					System.out.println("Now printing booking schedule for customer " + userID + ":");
+					System.out.printf("%-15s %-18s %-15s", "City", "Event Type", "Event ID");
+					System.out.println();
 					
-					if(result) {
-						System.out.println("Success");
-						//TODO: add log for this user
-					}else {
-						System.out.println("Fail");
-						//TODO: add log for this user
+					for (String s : returnMessage) {	
+						String subStringCity = s.substring(1, 4);
+						String subStringEventType = s.substring(0, 1);
+						String eventID = s.substring(1);
+						
+						if (subStringCity.equals("MTL")) {
+							if (subStringEventType.contentEquals("C")) {		
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("S")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("T")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+								System.out.println();
+							}
+						} else if (subStringCity.equals("TOR")) {
+							if (subStringEventType.contentEquals("C")) {		
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("S")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("T")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+								System.out.println();
+							}
+						} else if (subStringCity.equals("OTW")) {
+							if (subStringEventType.contentEquals("C")) {		
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("S")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+								System.out.println();
+							} else if (subStringEventType.contentEquals("T")) {
+								System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+								System.out.println();
+							}
+						}	
 					}
 					break;
 				}
+				
 				case 3:{
 					System.out.println("Now performing: Cancel an event of yours.");
 					System.out.println("Please enter event ID: (format example: MTLE100519)");

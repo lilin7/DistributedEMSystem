@@ -29,7 +29,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	private HashMap<String, HashMap<String, ArrayList<Integer>>> mainHashMap = new HashMap<String,HashMap<String, ArrayList<Integer>>>();
 	
 	// A customer can not book more than one event with the same event id and same event type
-	// record of customerID, eventType, eventID, to make sure unique
+	// record of customerID, eventType+eventID (e.g. CTORA100519, first letter is event type), to make sure unique
 	private HashMap<String, ArrayList<String>> cBookingRecord = new HashMap<String, ArrayList<String>>();
 	
 	// a customer can book at most 3 events from other cities overall in a month
@@ -230,22 +230,19 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		ArrayList<String> returnMessageFirstOtherCity = new ArrayList<String>();
 		ArrayList<String> returnMessageSecondOtherCity = new ArrayList<String>();
 		
-		// TODO send message to target city 1
-		// get reply
-		// put reply to returnMessageFirstOtherCity
+		// ------ begin communicate with the first other city:------
+		// send message to target city 1, get reply, put reply to returnMessageFirstOtherCity
 		DatagramSocket aSocket = null;  //a buffer
-		String result =""; //initialize
+		String result1 =""; //initialize
 		try{
 			System.out.println("asking request");
 			aSocket = new DatagramSocket(); //reference of the original socket
 
-			String messageToSend  =  customerID + " getBookingSchedule" ;//the message you want to send, e.g. "TORC1234, getBookingSchedule, ..."
-
+			String messageToSend = "getBookingSchedule " + customerID;//the message you want to send, e.g. "getBookingSchedule TORC1234"
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
-
 			InetAddress aHost = InetAddress.getByName("localhost");
 
-			int serverPort = firstRemoteUDPPort;// don't forget the second server in 2 methods: listEventAvailability, getBookingSchedule
+			int serverPort = firstRemoteUDPPort;// defined for every server already in server classes
 			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
 			aSocket.send(request);//request sent out
 			System.out.println("Request message sent : "+ new String(request.getData()));
@@ -256,8 +253,14 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 			//Client waits until the reply is received-----------------------------------------------------------------------
 			aSocket.receive(reply);//reply received and will populate reply packet now.
-			result = new String(reply.getData());
+			result1 = new String(reply.getData());
 			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
+			
+			String[] replyArray = result1.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)
+		
+			for (String s : replyArray) {
+				returnMessageFirstOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
+			}			
 		}
 		catch(SocketException e){
 			System.out.println("Socket: "+e.getMessage());
@@ -270,24 +273,22 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
 			//resource leakage, therefore, close the socket after it's use is completed to release resources.
 		}
+		// ------ end communicate with the first other city:------
 		
-		// TODO send message to target city 2
-		// get reply
-		// put reply to returnMessageSecondOtherCity
+		// ------ begin communicate with the second other city:------
+		// send message to target city 1, get reply, put reply to returnMessageFirstOtherCity
 		DatagramSocket bSocket = null;  //a buffer
 		String result2 =""; //initialize
 		try{
 			System.out.println("asking request");
 			bSocket = new DatagramSocket(); //reference of the original socket
 
-			String messageToSend  =  customerID + " getBookingSchedule" ;//the message you want to send, e.g. "TORC1234, getBookingSchedule, ..."
-
+			String messageToSend = "getBookingSchedule " + customerID;//the message you want to send, e.g. "getBookingSchedule TORC1234"
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+			InetAddress bHost = InetAddress.getByName("localhost");
 
-			InetAddress aHost = InetAddress.getByName("localhost");
-
-			int serverPort = secondRemoteUDPPort;// don't forget the second server in 2 methods: listEventAvailability, getBookingSchedule
-			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			int serverPort = secondRemoteUDPPort;// defined for every server already in server classes
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), bHost, serverPort);//request packet ready
 			bSocket.send(request);//request sent out
 			System.out.println("Request message sent : "+ new String(request.getData()));
 			
@@ -299,6 +300,12 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			bSocket.receive(reply);//reply received and will populate reply packet now.
 			result2 = new String(reply.getData());
 			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
+			
+			String[] replyArray = result2.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)
+		
+			for (String s : replyArray) {
+				returnMessageSecondOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
+			}			
 		}
 		catch(SocketException e){
 			System.out.println("Socket: "+e.getMessage());
@@ -311,10 +318,8 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
 			//resource leakage, therefore, close the socket after it's use is completed to release resources.
 		}
-		
-		
-		// put info into ArrayList<String> returnMessageFirstOtherCity and returnMessageSecondOtherCity
-
+		// ------ end communicate with the second other city:------
+			
 		// combine info in all 3 cities, and reply to client (return a ArrayList<String>, safe
 		for (int i = 0; i<returnMessageOwnCity.size(); i++) {
 			returnMessage.add(returnMessageOwnCity.get(i));
@@ -328,6 +333,8 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 				
 		return  returnMessage;//return a ArrayList<String> to client, safe
 	}
+	//--------end of method "public ArrayList<String> getBookingSchedule(String customerID)"------------------
+	
 	public boolean cancelEvent(String customerID,String eventID){
 		// push a add event message to the processing queue.
 		// wait that the message is processed
@@ -439,9 +446,11 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 
 	@Override
-	public String getBookingScheduleForUDP(String customerID) throws Exception {
-		//TODO:get what is needed
-		return null;
+	// done this method
+	public ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception {
+		//get a ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
+		ArrayList<String> returnMessageThisCity = cBookingRecord.get(customerID); 
+		return returnMessageThisCity;
 	}
 
 	@Override

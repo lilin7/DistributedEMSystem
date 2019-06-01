@@ -33,7 +33,7 @@ public interface DEMSInterface extends Remote {
 
 		public ArrayList<String> bookEventForUDP(String customerID,String eventID,String eventType) throws Exception;
 
-		public String getBookingScheduleForUDP(String customerID) throws Exception;
+		public ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception;
 
 		public String cancelEventForUDP(String customerID,String eventID) throws Exception;
 
