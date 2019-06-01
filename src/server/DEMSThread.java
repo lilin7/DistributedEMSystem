@@ -32,7 +32,8 @@ public class DEMSThread extends Thread{
                 aSocket.receive(request);
                 System.out.println("Request received from client: " + new String(request.getData()));
 
-                String requestToString = new String(request.getData());
+                String requestToString = new String(request.getData()); //receive message from source city
+                
                 String re = "";
                 //TODO:need change, can split request to get more parameters and finish the task blow
                 if(requestToString.equals("listEventAvailability")){
@@ -46,7 +47,8 @@ public class DEMSThread extends Thread{
                 }else{
                     //errormassage
                 }
-
+                
+                //done booking or cancel
                 byte [] me = re.getBytes();
                 DatagramPacket reply = new DatagramPacket(me, re.length(), request.getAddress(), request.getPort());// reply packet ready
                 aSocket.send(reply);// reply sent

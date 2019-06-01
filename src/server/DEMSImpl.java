@@ -341,23 +341,24 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 
 	//TODO:ask request template
-		/*DatagramSocket aSocket = null;
-		String result ="";
+		/*DatagramSocket aSocket = null;  //a buffer
+		String result =""; //initialize
 		try{
 			System.out.println("asking request");
 			aSocket = new DatagramSocket(); //reference of the original socket
 
-			String messageToSend  =  "";//the message you want to send
+			String messageToSend  =  "";//the message you want to send, e.g. "TORC1234, XXXXX, ..."
 
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
 
 			InetAddress aHost = InetAddress.getByName("localhost");
 
-			int serverPort = firstRemoteUDPPort;// don't forget the second server
+			int serverPort = firstRemoteUDPPort;// don't forget the second server in 2 methods: listEventAvailability, getBookingSchedule
 			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
 			aSocket.send(request);//request sent out
 			System.out.println("Request message sent : "+ new String(request.getData()));
-
+			
+			//from here to below: after sending request, receive feedback from target city
 			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
 			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
 
