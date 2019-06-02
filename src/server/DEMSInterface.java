@@ -9,7 +9,7 @@ public interface DEMSInterface extends Remote {
 	// port number need to start from 1025
 	   public final int PORT_MTL = 1025;
 	   public final int PORT_OTW = 1026;
-	   public final int PORT_TOR = 1027;
+	   public final int PORT_TOR = 1029;
 
 	   public final int UDP_PORT_MTL = 5555;
 	   public final int UDP_PORT_OTW = 6666;

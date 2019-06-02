@@ -49,17 +49,20 @@ public class DEMSThread extends Thread{
                 	// String[] requestSplit length =2, elements are: "getBookingSchedule", customerID 
                 	String customerID = requestSplit[1];
                 	//get an ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
-                	ArrayList<String> eventTypeAndIDAL = stub.getBookingScheduleForUDP(customerID);
-                	
-                	StringBuffer sb = new StringBuffer(); //use StringBuffer to avoid creating too much String
-                	for (String s : eventTypeAndIDAL) {
-                		sb.append(s);
-                		sb.append(" ");
-                	}
-                	//change the info which need to be passed to one String, 
-                	//the original elements in ArrayList<String> are separated by space, and no space at end
-                	re = sb.toString().trim(); 
-                	
+                	if (stub.getBookingScheduleForUDP(customerID) != null) { //if this customer has record in that city
+                		ArrayList<String> eventTypeAndIDAL = stub.getBookingScheduleForUDP(customerID);
+                    	
+                    	StringBuffer sb = new StringBuffer(); //use StringBuffer to avoid creating too much String
+                    	for (String s : eventTypeAndIDAL) {
+                    		sb.append(s);
+                    		sb.append(" ");
+                    	}
+                    	//change the info which need to be passed to one String, 
+                    	//the original elements in ArrayList<String> are separated by space, and no space at end
+                    	re = sb.toString().trim(); 
+                	} else { // if this customer doesn't have any record in that city
+                		re = "";
+                	}              	              	
                 }else if(requestToString.equals("cancelEvent")){
                     //re = stub.cancelEventForUDP(param1, param2...);
                 }else{

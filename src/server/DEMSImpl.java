@@ -226,9 +226,13 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		
 		ArrayList<String> returnMessage = new ArrayList<String>(); // only return when combine info in all cities
 		
-		ArrayList<String> returnMessageOwnCity = cBookingRecord.get(customerID);
+		ArrayList<String> returnMessageOwnCity = new ArrayList<String>();
 		ArrayList<String> returnMessageFirstOtherCity = new ArrayList<String>();
 		ArrayList<String> returnMessageSecondOtherCity = new ArrayList<String>();
+		
+		if (cBookingRecord.containsKey(customerID)) {
+			returnMessageOwnCity = cBookingRecord.get(customerID);
+		}		
 		
 		// ------ begin communicate with the first other city:------
 		// send message to target city 1, get reply, put reply to returnMessageFirstOtherCity
@@ -254,12 +258,12 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			//Client waits until the reply is received-----------------------------------------------------------------------
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result1 = new String(reply.getData());
-			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
-			
-			String[] replyArray = result1.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)
-		
-			for (String s : replyArray) {
-				returnMessageFirstOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
+			System.out.println("Reply received from the server is: "+ result1);//print reply message after converting it to a string from bytes	
+			if (!result1.equals("")) {						
+				String[] replyArray = result1.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
+				for (String s : replyArray) {
+					returnMessageFirstOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
+				}			
 			}			
 		}
 		catch(SocketException e){
@@ -301,10 +305,11 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			result2 = new String(reply.getData());
 			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
 			
-			String[] replyArray = result2.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)
-		
-			for (String s : replyArray) {
-				returnMessageSecondOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
+			if (!result2.equals("")) {						
+				String[] replyArray = result2.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
+				for (String s : replyArray) {
+					returnMessageSecondOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
+				}			
 			}			
 		}
 		catch(SocketException e){
@@ -321,14 +326,22 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		// ------ end communicate with the second other city:------
 			
 		// combine info in all 3 cities, and reply to client (return a ArrayList<String>, safe
-		for (int i = 0; i<returnMessageOwnCity.size(); i++) {
-			returnMessage.add(returnMessageOwnCity.get(i));
-		}		
-		for (int i = 0; i<returnMessageFirstOtherCity.size(); i++) {
-			returnMessage.add(returnMessageFirstOtherCity.get(i));
-		}		
-		for (int i = 0; i<returnMessageSecondOtherCity.size(); i++) {
-			returnMessage.add(returnMessageSecondOtherCity.get(i));
+		if (returnMessageOwnCity.size()!=0) {
+			for (int i = 0; i<returnMessageOwnCity.size(); i++) {
+				returnMessage.add(returnMessageOwnCity.get(i));
+			}	
+		}
+		
+		if (returnMessageFirstOtherCity.size()!=0) {
+			for (int i = 0; i<returnMessageFirstOtherCity.size(); i++) {
+				returnMessage.add(returnMessageFirstOtherCity.get(i));
+			}
+		}
+			
+		if (returnMessageSecondOtherCity.size()!=0) {
+			for (int i = 0; i<returnMessageSecondOtherCity.size(); i++) {
+				returnMessage.add(returnMessageSecondOtherCity.get(i));
+			}
 		}
 				
 		return  returnMessage;//return a ArrayList<String> to client, safe
@@ -449,8 +462,13 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	// done this method
 	public ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception {
 		//get a ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
-		ArrayList<String> returnMessageThisCity = cBookingRecord.get(customerID); 
-		return returnMessageThisCity;
+		
+		if (cBookingRecord.containsKey(customerID)) {
+			ArrayList<String> returnMessageThisCity = cBookingRecord.get(customerID); 
+			return returnMessageThisCity;
+		} else { //if this client of other city never booked in this city (doesn't exist in this city's database)
+			return null;
+		}
 	}
 
 	@Override
