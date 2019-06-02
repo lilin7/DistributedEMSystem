@@ -57,7 +57,11 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 		this.firstRemoteUDPPort = firstRemoteUDPPort;
 		this.secondRemoteUDPPort = secondRemoteUDPPort;
-		
+
+		this.MTLRemoteUDPPortNumber = UDP_PORT_MTL;
+		this.OTWRemoteUDPPortNumber = UDP_PORT_OTW;
+		this.TORRemoteUDPPortNumber = UDP_PORT_TOR;
+
 		// TODO start a UDP socket (use unused port like 1031-3) in accept, in another thread
         // TODO open UPD socket on others
 		
@@ -424,9 +428,10 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			returnMessage.add("City confusion");
 			return returnMessage;
 		}
-		
+		eventType = eventType.trim();
+
 		 // this is to write if this customer wants to book in other cities, need UDP
-		if (!mainHashMap.get(eventType).containsKey(eventID)) { // if the event doesn't exist
+		if (!(mainHashMap.get(eventType).containsKey(eventID))) { // if the event doesn't exist
 			returnMessage.add("NoExist");
 			returnMessage.add("The event you attampt to book doesn't exist.");
 			return returnMessage;
@@ -503,7 +508,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		} else if (cityAbb.equals("TOR")){
 			targetUDPPortNumber = TORRemoteUDPPortNumber;
 		}
-		
+		System.out.println(targetUDPPortNumber);
 		DatagramSocket aSocket = null;  //a buffer
 		String result =""; //initialize
 				
