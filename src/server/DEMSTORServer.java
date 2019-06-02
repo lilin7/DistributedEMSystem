@@ -11,6 +11,10 @@ public class DEMSTORServer{
 
 		int firstRemoteUDPPortNumber = DEMSInterface.UDP_PORT_MTL;
 		int secondRemoteUDPPortNumber = DEMSInterface.UDP_PORT_OTW;
+		
+		int MTLRemoteUDPPortNumber = DEMSInterface.UDP_PORT_MTL;
+		int TORRemoteUDPPortNumber = DEMSInterface.UDP_PORT_TOR;
+		int OTWRemoteUDPPortNumber = DEMSInterface.UDP_PORT_OTW;
 
 		DEMSImpl stub = new DEMSImpl(firstRemoteUDPPortNumber,secondRemoteUDPPortNumber);
 		Registry registry = LocateRegistry.createRegistry(localRMIPortNumber);

@@ -105,7 +105,7 @@ public class DEMSClient {
 		
 		do {
 			System.out.print(
-					"Current User: Manager " + userID + "\n"
+					"\n Current User: Manager " + userID + "\n"
 					+"Please input a number to select action: \n"
 					+"1. Add an event  \n"
 					+"2. Remove and event \n"
@@ -330,7 +330,7 @@ public class DEMSClient {
 		
 		do {
 			System.out.println(
-					"Current User: Customer " + userID + "\n"
+					"\n Current User: Customer " + userID + "\n"
 					+"Please input a number to select action: \n"
 					+"1. Book an event \n"
 					+"2. Get your booking schedule in all cities  \n"

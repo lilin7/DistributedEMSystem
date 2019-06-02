@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.util.ArrayList;
@@ -30,15 +31,23 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	
 	// A customer can not book more than one event with the same event id and same event type
 	// record of customerID, eventType+eventID (e.g. CTORA100519, first letter is event type), to make sure unique
+	
+	// TODO use concurrent hasmap
+	//private ConcurrentHashMap<String, ArrayList<String>> cBookingRecord = new ConcurrentHashMap<String, ArrayList<String>>();
+	
 	private HashMap<String, ArrayList<String>> cBookingRecord = new HashMap<String, ArrayList<String>>();
 	
-	// a customer can book at most 3 events from other cities overall in a month
+	// a customer can book at most 3 events from other cities overall in a month. <CustomerID, <monthYear, numberOfBooking>
 	private HashMap<String, HashMap<String, Integer>> cBookingOtherCity = new HashMap<String, HashMap<String, Integer>> ();
 
 
 	//remote udp port for request other servers
 	private int firstRemoteUDPPort;
 	private int secondRemoteUDPPort;
+	
+	private int MTLRemoteUDPPortNumber;
+	private int TORRemoteUDPPortNumber;
+	private int OTWRemoteUDPPortNumber;
 
 	public DEMSImpl(int firstRemoteUDPPort,int secondRemoteUDPPort) throws RemoteException {
 		super();
@@ -210,12 +219,51 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 					}
 				}
 			}
-		} else { // TODO this is to write if this customer wants to book in other cities, add UDP communication
-			// send message to target city
-			// get reply
-			// put reply to returnMessage
-			// returnMessage to client
-					
+		} else { // this is to write if this customer wants to book in other cities, add UDP communication
+			
+			// ------ begin communicate with the target city:------
+			// send message to target city, get reply, put reply to returnMessage		
+			String result;
+			String monthYear = eventID.substring(6,10); // target booking month and year, e.g. "0519"
+			
+			// validate if this customer is eligible for booking in other cities 
+			if (cBookingOtherCity.containsKey(customerID)) { //if this customer has ever booked in other cities
+				if (cBookingOtherCity.get(customerID).containsKey(monthYear)) { // if this customer has booked in the target month
+					if (! (cBookingOtherCity.get(customerID).get(monthYear) <3) ) { // if booking time exceeding limitation
+						returnMessage.add("Exceed3LimitInOtherCity");
+						returnMessage.add("A customer can only book at most 3 events from other cities overall in a month.");
+						return returnMessage;
+					} else { // if booking time less than 3, go UDP communicate with the target city
+						result = UDPCommunicationBookEvent(customerID, eventID, eventType);
+													
+						// add 1 to the number of booking of this customer of this month
+						if (result.equals("Success")) {
+							int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(monthYear);
+							cBookingOtherCity.get(customerID).put(monthYear, currentBookingOtherCities+1);
+						}
+					}
+				} else { //if customer exists in cBookingOtherCity but never booked this month, also can book
+					result = UDPCommunicationBookEvent(customerID, eventID, eventType);
+				
+					// create this month, put 1
+					if (result.equals("Success")) {
+						HashMap<String, Integer> monthRecord = cBookingOtherCity.get(customerID);
+						monthRecord.put(monthYear, 1);
+						cBookingOtherCity.put(customerID, monthRecord);
+					}
+				}
+			} else { //if this customer has never booked in other cities, can book
+				result = UDPCommunicationBookEvent(customerID, eventID, eventType);
+				
+				// if booking successes, need to record in the cBookingOtherCity. As this customer doesn't exist, create
+				if (result.equals("Success")) {
+					HashMap<String, Integer> tempDateNumber =  new HashMap<String, Integer> ();
+					tempDateNumber.put(monthYear, 1);
+					cBookingOtherCity.put(customerID, tempDateNumber);						
+				}
+			}
+			// ------ end communicate with target other city:------	
+			returnMessage.add(result);			
 			return returnMessage;
 		}
 	}
@@ -343,6 +391,9 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 				returnMessage.add(returnMessageSecondOtherCity.get(i));
 			}
 		}
+		
+		// TODO check using addAll instead of for loops
+		//returnMessage.addAll(returnMessageSecondOtherCity);
 				
 		return  returnMessage;//return a ArrayList<String> to client, safe
 	}
@@ -362,7 +413,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 
 	@Override
-	//book event in my city upon request of other cities
+	//book event in my city upon request of other cities, no record needed in cBookingOtherCites in target city, it is managed by its own city
 	public ArrayList<String> bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
 		ArrayList<String> returnMessage = new ArrayList<String>();
 		String eventTypeAndID = eventType.substring(0,1) + "" + eventID;
@@ -385,17 +436,11 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 				returnMessage.add("This event is fully booked.");
 				return returnMessage;
 			} else { // if there is still space to book	
-				String monthYear = eventID.substring(6,10);
 				if (!cBookingRecord.containsKey(customerID)) { // if this customer never booked before and doesn't exist in database	
 					// add to total booking record
 					ArrayList<String> tempEventTypeAndIDAL =  new ArrayList<String> ();
 					tempEventTypeAndIDAL.add(eventTypeAndID);
 					cBookingRecord.put(customerID, tempEventTypeAndIDAL);
-					
-					// add to booking record other cities
-					HashMap<String, Integer> tempDateNumber =  new HashMap<String, Integer> ();
-					tempDateNumber.put(monthYear, 1);
-					cBookingOtherCity.put(customerID, tempDateNumber);
 					
 					//update space available of this event
 					int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
@@ -411,47 +456,17 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 						returnMessage.add("A customer can not book more than one event with the same event id and same event type.");
 						return returnMessage;
 					} else { // if the event type and ID is unique
-						if (! cBookingOtherCity.containsKey(customerID)) { // if customer only booked in own city, never in other cities
-							// update total booking record (by adding this event)
-							cBookingRecord.get(customerID).add(eventTypeAndID);
-							
-							// add to booking record other cities
-							HashMap<String, Integer> tempDateNumber =  new HashMap<String, Integer> ();
-							tempDateNumber.put(monthYear, 1);
-							cBookingOtherCity.put(customerID, tempDateNumber);
-							
-							//update space available of this event
-							int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
-							mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
-							
-							returnMessage.add("Success");
-							returnMessage.add("You have successfully booked a space in:  \n"
-									+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
-							return returnMessage;		
-						} else { // customer already booked in other cities in the past
-							int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(monthYear);
-							if (currentBookingOtherCities <3) { // if less than 3 times in the month of the input event in other cities
-								// update total booking record (by adding this event)
-								cBookingRecord.get(customerID).add(eventTypeAndID);
-								
-								// update booking record in other cities 
-								cBookingOtherCity.get(customerID).put(monthYear, currentBookingOtherCities+1);
-								
-								//update space available of this event
-								int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
-								mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
-								
-								returnMessage.add("Success");
-								returnMessage.add("You have successfully booked a space in:  \n"
-										+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
-								return returnMessage;
-								
-							} else { // if equals to 3 times or more in the month of the input event in other cities
-								returnMessage.add("Exceed3LimitInOtherCity");
-								returnMessage.add("A customer can only book at most 3 events from other cities overall in a month.");
-								return returnMessage;
-							}
-						}
+						// update total booking record (by adding this event)
+						cBookingRecord.get(customerID).add(eventTypeAndID);
+						
+						//update space available of this event
+						int usedSpace = mainHashMap.get(eventType).get(eventID).get(1);
+						mainHashMap.get(eventType).get(eventID).set(1, usedSpace+1);
+						
+						returnMessage.add("Success");
+						returnMessage.add("You have successfully booked a space in:  \n"
+								+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
+						return returnMessage;		
 					}
 				}
 			}
@@ -475,6 +490,58 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	public String cancelEventForUDP(String customerID, String eventID) throws Exception {
 		//TODO:get what is needed
 		return null;
+	}
+	
+	public String UDPCommunicationBookEvent(String customerID, String eventID, String eventType) {
+		// judge which is the target city
+		String cityAbb = eventID.substring(0, 3);
+		int targetUDPPortNumber = 0;
+		if (cityAbb.equals("MTL")) {
+			targetUDPPortNumber = MTLRemoteUDPPortNumber;
+		} else if (cityAbb.equals("OTW")){
+			targetUDPPortNumber = OTWRemoteUDPPortNumber;
+		} else if (cityAbb.equals("TOR")){
+			targetUDPPortNumber = TORRemoteUDPPortNumber;
+		}
+		
+		DatagramSocket aSocket = null;  //a buffer
+		String result =""; //initialize
+				
+		System.out.println("asking request");
+		try{
+			System.out.println("asking request");
+			aSocket = new DatagramSocket(); //reference of the original socket
+
+			String messageToSend = "bookEvent " + customerID + " " + eventID + " " + eventType;//the message you want to send, e.g. "bookEvent TORC1234 OTWA100519 Conferences"
+			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+			InetAddress aHost = InetAddress.getByName("localhost");
+
+			int serverPort = targetUDPPortNumber;// defined for every server already in server classes
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			aSocket.send(request);//request sent out
+			System.out.println("Request message sent : "+ new String(request.getData()));
+			
+			//from here to below: after sending request, receive feedback from target city
+			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
+			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
+
+			//Client waits until the reply is received-----------------------------------------------------------------------
+			aSocket.receive(reply);//reply received and will populate reply packet now.
+			result = new String(reply.getData());
+			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes		
+		}
+		catch(SocketException e){
+			System.out.println("Socket: "+e.getMessage());
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.out.println("IO: "+e.getMessage());
+		} 
+		finally{
+			//if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
+			//resource leakage, therefore, close the socket after it's use is completed to release resources.
+		}
+		return result;
 	}
 
 
@@ -517,5 +584,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
 		//resource leakage, therefore, close the socket after it's use is completed to release resources.
 		}*/
+	
+	
 
 }

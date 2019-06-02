@@ -36,14 +36,15 @@ public class DEMSThread extends Thread{
                 String action = requestSplit[0]; // e.g. method name, "getEventBookingSchedule"
                 
                 //TODO:need change, can split request to get more parameters and finish the task blow
-                if (requestToString.equals("listEventAvailability")){
+                if (action.equals("listEventAvailability")){
                     //re = stub.listEventAvailabilityForUDP(param1, param2...);
-                } else if (requestToString.equals("bookEvent")){
-                	String customerID = requestSplit[0];
-                    //action = stub.bookEventForUDP(customerID);
-                	// turn ArrayList<String> action to a String, assign to re
-                	re = "";
-                	
+                } else if (action.equals("bookEvent")){
+                	String customerID = requestSplit[1];
+                	String eventID = requestSplit[2];
+                	String eventType = requestSplit[3];
+                	              	
+                	ArrayList<String> bookEventResult = stub.bookEventForUDP(customerID, eventID, eventType);               	
+                	re = bookEventResult.get(0);  //e.g. "Success" "NotUnique" "Exceed3LimitInOtherCity"       
                 	
                 } else if (action.equals("getBookingSchedule")){  //done inside this else if condition
                 	// String[] requestSplit length =2, elements are: "getBookingSchedule", customerID 
@@ -60,10 +61,11 @@ public class DEMSThread extends Thread{
                     	//change the info which need to be passed to one String, 
                     	//the original elements in ArrayList<String> are separated by space, and no space at end
                     	re = sb.toString().trim(); 
+                    	
                 	} else { // if this customer doesn't have any record in that city
                 		re = "";
                 	}              	              	
-                }else if(requestToString.equals("cancelEvent")){
+                }else if(action.equals("cancelEvent")){
                     //re = stub.cancelEventForUDP(param1, param2...);
                 }else{
                     //errormassage
