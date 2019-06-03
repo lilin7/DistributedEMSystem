@@ -35,8 +35,11 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	// TODO use concurrent hasmap
 	//private ConcurrentHashMap<String, ArrayList<String>> cBookingRecord = new ConcurrentHashMap<String, ArrayList<String>>();
 	
-	private HashMap<String, ArrayList<String>> cBookingRecord = new HashMap<String, ArrayList<String>>();
-	
+	private HashMap<String, ArrayList<String>> cBookingRecord = new HashMap<String, ArrayList<String>>();	
+	public HashMap<String, ArrayList<String>> getcBookingRecord() {
+		return cBookingRecord;
+	}
+
 	// a customer can book at most 3 events from other cities overall in a month. <CustomerID, <monthYear, numberOfBooking>
 	private HashMap<String, HashMap<String, Integer>> cBookingOtherCity = new HashMap<String, HashMap<String, Integer>> ();
 
@@ -288,117 +291,22 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		
 		// ------ begin communicate with the first other city:------
 		// send message to target city 1, get reply, put reply to returnMessageFirstOtherCity
-		DatagramSocket aSocket = null;  //a buffer
-		String result1 =""; //initialize
-		try{
-			System.out.println("asking request");
-			aSocket = new DatagramSocket(); //reference of the original socket
-
-			String messageToSend = "getBookingSchedule " + customerID;//the message you want to send, e.g. "getBookingSchedule TORC1234"
-			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
-			InetAddress aHost = InetAddress.getByName("localhost");
-
-			int serverPort = firstRemoteUDPPort;// defined for every server already in server classes
-			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
-			aSocket.send(request);//request sent out
-			System.out.println("Request message sent : "+ new String(request.getData()));
-			
-			//from here to below: after sending request, receive feedback from target city
-			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
-			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
-
-			//Client waits until the reply is received-----------------------------------------------------------------------
-			aSocket.receive(reply);//reply received and will populate reply packet now.
-			result1 = new String(reply.getData());
-			System.out.println("Reply received from the server is: "+ result1);//print reply message after converting it to a string from bytes	
-			if (!result1.equals("")) {						
-				String[] replyArray = result1.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
-				for (String s : replyArray) {
-					returnMessageFirstOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
-				}			
-			}			
-		}
-		catch(SocketException e){
-			System.out.println("Socket: "+e.getMessage());
-		}
-		catch(IOException e){
-			e.printStackTrace();
-			System.out.println("IO: "+e.getMessage());
-		}
-		finally{
-			if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
-			//resource leakage, therefore, close the socket after it's use is completed to release resources.
-		}
-		// ------ end communicate with the first other city:------
+		returnMessageFirstOtherCity = UDPCommunicationGetBookingSchedule(customerID, firstRemoteUDPPort);
 		
 		// ------ begin communicate with the second other city:------
-		// send message to target city 1, get reply, put reply to returnMessageFirstOtherCity
-		DatagramSocket bSocket = null;  //a buffer
-		String result2 =""; //initialize
-		try{
-			System.out.println("asking request");
-			bSocket = new DatagramSocket(); //reference of the original socket
-
-			String messageToSend = "getBookingSchedule " + customerID;//the message you want to send, e.g. "getBookingSchedule TORC1234"
-			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
-			InetAddress bHost = InetAddress.getByName("localhost");
-
-			int serverPort = secondRemoteUDPPort;// defined for every server already in server classes
-			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), bHost, serverPort);//request packet ready
-			bSocket.send(request);//request sent out
-			System.out.println("Request message sent : "+ new String(request.getData()));
+		// send message to target city 2, get reply, put reply to returnMessageFirstOtherCity
+		returnMessageSecondOtherCity = UDPCommunicationGetBookingSchedule(customerID, secondRemoteUDPPort);
 			
-			//from here to below: after sending request, receive feedback from target city
-			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
-			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
-
-			//Client waits until the reply is received-----------------------------------------------------------------------
-			bSocket.receive(reply);//reply received and will populate reply packet now.
-			result2 = new String(reply.getData());
-			System.out.println("Reply received from the server is: "+ new String(reply.getData()));//print reply message after converting it to a string from bytes
-			
-			if (!result2.equals("")) {						
-				String[] replyArray = result2.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
-				for (String s : replyArray) {
-					returnMessageSecondOtherCity.add(s); // each element in this ArrayList<String> is "CTORA100519" etc.
-				}			
-			}			
-		}
-		catch(SocketException e){
-			System.out.println("Socket: "+e.getMessage());
-		}
-		catch(IOException e){
-			e.printStackTrace();
-			System.out.println("IO: "+e.getMessage());
-		}
-		finally{
-			if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
-			//resource leakage, therefore, close the socket after it's use is completed to release resources.
-		}
-		// ------ end communicate with the second other city:------
-			
-		// combine info in all 3 cities, and reply to client (return a ArrayList<String>, safe
-		if (returnMessageOwnCity.size()!=0) {
-			for (int i = 0; i<returnMessageOwnCity.size(); i++) {
-				returnMessage.add(returnMessageOwnCity.get(i));
-			}	
-		}
+		// combine info in all 3 cities, and reply to client (return a ArrayList<String>, safe	
+		returnMessage.addAll(returnMessageOwnCity);
+		returnMessage.addAll(returnMessageFirstOtherCity);
+		returnMessage.addAll(returnMessageSecondOtherCity);
 		
-		if (returnMessageFirstOtherCity.size()!=0) {
-			for (int i = 0; i<returnMessageFirstOtherCity.size(); i++) {
-				returnMessage.add(returnMessageFirstOtherCity.get(i));
-			}
+		System.out.println("Return booking schedules below:");
+		for (String s : returnMessage) {
+			System.out.print(s + " ");
 		}
-			
-		if (returnMessageSecondOtherCity.size()!=0) {
-			for (int i = 0; i<returnMessageSecondOtherCity.size(); i++) {
-				returnMessage.add(returnMessageSecondOtherCity.get(i));
-			}
-		}
-		
-		// TODO check using addAll instead of for loops
-		//returnMessage.addAll(returnMessageSecondOtherCity);
-				
+	
 		return  returnMessage;//return a ArrayList<String> to client, safe
 	}
 	//--------end of method "public ArrayList<String> getBookingSchedule(String customerID)"------------------
@@ -420,25 +328,30 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	//book event in my city upon request of other cities, no record needed in cBookingOtherCites in target city, it is managed by its own city
 	public ArrayList<String> bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
 		ArrayList<String> returnMessage = new ArrayList<String>();
+		customerID = customerID.trim();
+		eventType = eventType.trim();
+		eventID = eventID.trim();
+		
 		String eventTypeAndID = eventType.substring(0,1) + "" + eventID;
 		
 		//validate, if book for own city, should not use this method
 		if (customerID.substring(0,3).toUpperCase().equals(eventID.substring(0,3).toUpperCase())) { 
 			returnMessage.add("Fail");
 			returnMessage.add("City confusion");
+			System.out.println(returnMessage.get(0)); System.out.println(returnMessage.get(1));
 			return returnMessage;
 		}
-		eventType = eventType.trim();
 
-		 // this is to write if this customer wants to book in other cities, need UDP
 		if (!(mainHashMap.get(eventType).containsKey(eventID))) { // if the event doesn't exist
 			returnMessage.add("NoExist");
 			returnMessage.add("The event you attampt to book doesn't exist.");
+			System.out.println(returnMessage.get(0)); System.out.println(returnMessage.get(1));
 			return returnMessage;
 		} else { // if the event exists
 			if (! (mainHashMap.get(eventType).get(eventID).get(0) > mainHashMap.get(eventType).get(eventID).get(1))) { // if the capacity left is not enough
 				returnMessage.add("Full");
 				returnMessage.add("This event is fully booked.");
+				System.out.println(returnMessage.get(0)); System.out.println(returnMessage.get(1));
 				return returnMessage;
 			} else { // if there is still space to book	
 				if (!cBookingRecord.containsKey(customerID)) { // if this customer never booked before and doesn't exist in database	
@@ -453,12 +366,14 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 					
 					returnMessage.add("Success");
 					returnMessage.add("You have successfully booked a space in:  \n"
-							+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
+							+ "Event type: " + eventType + "; Event ID: " + eventID + ".");	
+					System.out.println(returnMessage.get(0)); System.out.println(returnMessage.get(1));
 					return returnMessage;
 				} else { // if this customer booked before and exists
 					if (cBookingRecord.get(customerID).contains(eventTypeAndID)) { // if the event type and ID is not unique
 						returnMessage.add("NotUnique");
 						returnMessage.add("A customer can not book more than one event with the same event id and same event type.");
+						System.out.println(returnMessage.get(0)); System.out.println(returnMessage.get(1));
 						return returnMessage;
 					} else { // if the event type and ID is unique
 						// update total booking record (by adding this event)
@@ -470,7 +385,8 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 						
 						returnMessage.add("Success");
 						returnMessage.add("You have successfully booked a space in:  \n"
-								+ "Event type: " + eventType + "; Event ID: " + eventID + ".");					
+								+ "Event type: " + eventType + "; Event ID: " + eventID + ".");		
+						System.out.println(returnMessage.get(0)); System.out.println(returnMessage.get(1));
 						return returnMessage;		
 					}
 				}
@@ -481,14 +397,9 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	@Override
 	// done this method
 	public ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception {
-		//get a ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
-		
-		if (cBookingRecord.containsKey(customerID)) {
-			ArrayList<String> returnMessageThisCity = cBookingRecord.get(customerID); 
-			return returnMessageThisCity;
-		} else { //if this client of other city never booked in this city (doesn't exist in this city's database)
-			return null;
-		}
+		//get a ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)		
+		ArrayList<String> returnMessageThisCity = cBookingRecord.get(customerID); 
+		return returnMessageThisCity;
 	}
 
 	@Override
@@ -511,8 +422,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		System.out.println(targetUDPPortNumber);
 		DatagramSocket aSocket = null;  //a buffer
 		String result =""; //initialize
-				
-		System.out.println("asking request");
+
 		try{
 			System.out.println("asking request");
 			aSocket = new DatagramSocket(); //reference of the original socket
@@ -547,6 +457,52 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			//resource leakage, therefore, close the socket after it's use is completed to release resources.
 		}
 		return result;
+	}
+	
+	public ArrayList<String> UDPCommunicationGetBookingSchedule(String customerID, int remoteUDPPort) {		
+		ArrayList<String> returnMessageThisCity = new ArrayList<String>();
+		DatagramSocket aSocket = null;  //a buffer
+		String result =""; //initialize
+		try{
+			System.out.println("asking request");
+			aSocket = new DatagramSocket(); //reference of the original socket
+
+			String messageToSend = "getBookingSchedule " + customerID;//the message you want to send, e.g. "getBookingSchedule TORC1234"
+			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+			InetAddress aHost = InetAddress.getByName("localhost");
+
+			int serverPort = remoteUDPPort;// defined for every server already in server classes
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			aSocket.send(request);//request sent out
+			System.out.println("Request message sent : "+ new String(request.getData()));
+			
+			//from here to below: after sending request, receive feedback from target city
+			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
+			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
+
+			//Client waits until the reply is received-----------------------------------------------------------------------
+			aSocket.receive(reply);//reply received and will populate reply packet now.
+			result = new String(reply.getData());
+			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes	
+			if (!result.trim().equals("")) {						
+				String[] replyArray = result.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
+				for (String s : replyArray) {
+					returnMessageThisCity.add(s.trim()); // each element in this ArrayList<String> is "CTORA100519" etc.
+				}			
+			}			
+		}
+		catch(SocketException e){
+			System.out.println("Socket: "+e.getMessage());
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.out.println("IO: "+e.getMessage());
+		} 
+		finally{
+			//if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
+			//resource leakage, therefore, close the socket after it's use is completed to release resources.
+		}
+		return returnMessageThisCity;
 	}
 
 

@@ -105,7 +105,7 @@ public class DEMSClient {
 		
 		do {
 			System.out.print(
-					"\n Current User: Manager " + userID + "\n"
+					"\nCurrent User: Manager " + userID + "\n"
 					+"Please input a number to select action: \n"
 					+"1. Add an event  \n"
 					+"2. Remove and event \n"
@@ -223,7 +223,7 @@ public class DEMSClient {
 					}else if (returnMessage.get(0).equals("Full")){
 						System.out.println("Fail. This event is fully booked.");
 						//TODO: add log for this user
-					} else if (returnMessage.get(0).equals("Success")) {
+					} else if (returnMessage.get(0).trim().equals("Success")) {
 						System.out.println("You have successfully booked a space in:  \n"
 								+ "Event type: " + eventType + "; Event ID: " + eventID + ".");
 					} else if (returnMessage.get(0).equals("NotUnique")) {
@@ -250,9 +250,9 @@ public class DEMSClient {
 						System.out.println();
 						
 						for (String s : returnMessage) {	
-							String subStringCity = s.substring(1, 4);
-							String subStringEventType = s.substring(0, 1);
-							String eventID = s.substring(1);
+							String subStringCity = s.trim().substring(1, 4);
+							String subStringEventType = s.trim().substring(0, 1);
+							String eventID = s.trim().substring(1);
 							
 							if (subStringCity.equals("MTL")) {
 								if (subStringEventType.contentEquals("C")) {		
@@ -267,24 +267,24 @@ public class DEMSClient {
 								}
 							} else if (subStringCity.equals("TOR")) {
 								if (subStringEventType.contentEquals("C")) {		
-									System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+									System.out.printf("%-15s %-18s %-15s", "Toronto", "Conference", eventID);
 									System.out.println();
 								} else if (subStringEventType.contentEquals("S")) {
-									System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+									System.out.printf("%-15s %-18s %-15s", "Toronto", "Seminar", eventID);
 									System.out.println();
 								} else if (subStringEventType.contentEquals("T")) {
-									System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+									System.out.printf("%-15s %-18s %-15s", "Toronto", "Trade Show", eventID);
 									System.out.println();
 								}
 							} else if (subStringCity.equals("OTW")) {
 								if (subStringEventType.contentEquals("C")) {		
-									System.out.printf("%-15s %-18s %-15s", "Montreal", "Conference", eventID);
+									System.out.printf("%-15s %-18s %-15s", "Ottawa", "Conference", eventID);
 									System.out.println();
 								} else if (subStringEventType.contentEquals("S")) {
-									System.out.printf("%-15s %-18s %-15s", "Montreal", "Seminar", eventID);
+									System.out.printf("%-15s %-18s %-15s", "Ottawa", "Seminar", eventID);
 									System.out.println();
 								} else if (subStringEventType.contentEquals("T")) {
-									System.out.printf("%-15s %-18s %-15s", "Montreal", "Trade Show", eventID);
+									System.out.printf("%-15s %-18s %-15s", "Ottawa", "Trade Show", eventID);
 									System.out.println();
 								}
 							}	
@@ -330,7 +330,7 @@ public class DEMSClient {
 		
 		do {
 			System.out.println(
-					"\n Current User: Customer " + userID + "\n"
+					"\nCurrent User: Customer " + userID + "\n"
 					+"Please input a number to select action: \n"
 					+"1. Book an event \n"
 					+"2. Get your booking schedule in all cities  \n"
@@ -343,9 +343,7 @@ public class DEMSClient {
 			
 			switch (user_input) {
 				case 1:{					
-					System.out.println("Now performing: Book event for a customer.");
-					System.out.println("Please enter customer ID: (format example: TORC2345)");
-					String customerID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Now performing: Book event for you, your customer ID is: " + userID);
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");

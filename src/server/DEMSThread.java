@@ -22,18 +22,18 @@ public class DEMSThread extends Thread{
     public void run(){
         DatagramSocket aSocket = null;
         try {
-            aSocket = new DatagramSocket(localUDPport);
-            byte[] buffer = new byte[1000];
+            aSocket = new DatagramSocket(localUDPport);          
             System.out.println("Server UDP Listen Started");
             while (true) {
             	// receive request (can only be String) from other city to act in this city
+            	byte[] buffer = new byte[1000];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length); 
                 aSocket.receive(request); //e.g. TORC1234 getBookingSchedule
                 System.out.println("Request received from client: " + new String(request.getData()));
                 String re = "";
                 String requestToString = new String(request.getData()); //receive message from source city
                 String[] requestSplit = requestToString.split("\\s+");
-                String action = requestSplit[0]; // e.g. method name, "getEventBookingSchedule"
+                String action = requestSplit[0].trim(); // e.g. method name, "getEventBookingSchedule"
                 
                 //TODO:need change, can split request to get more parameters and finish the task blow
                 if (action.equals("listEventAvailability")){
@@ -48,9 +48,11 @@ public class DEMSThread extends Thread{
                 	
                 } else if (action.equals("getBookingSchedule")){  //done inside this else if condition
                 	// String[] requestSplit length =2, elements are: "getBookingSchedule", customerID 
-                	String customerID = requestSplit[1];
+                	String customerID = requestSplit[1].trim();
+                	//String customerID = requestSplit[1].trim().substring(0, 8);
                 	//get an ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
-                	if (stub.getBookingScheduleForUDP(customerID) != null) { //if this customer has record in that city
+                	              	
+                	if (stub.getcBookingRecord().containsKey(customerID)) { //if this customer has record in that city
                 		ArrayList<String> eventTypeAndIDAL = stub.getBookingScheduleForUDP(customerID);
                     	
                     	StringBuffer sb = new StringBuffer(); //use StringBuffer to avoid creating too much String
@@ -60,15 +62,14 @@ public class DEMSThread extends Thread{
                     	}
                     	//change the info which need to be passed to one String, 
                     	//the original elements in ArrayList<String> are separated by space, and no space at end
-                    	re = sb.toString().trim(); 
-                    	
+                    	re = sb.toString().trim();                  	
                 	} else { // if this customer doesn't have any record in that city
                 		re = "";
                 	}              	              	
                 }else if(action.equals("cancelEvent")){
                     //re = stub.cancelEventForUDP(param1, param2...);
                 }else{
-                    //errormassage
+                    //error massage
                 }
                 
                 //done booking or cancel
