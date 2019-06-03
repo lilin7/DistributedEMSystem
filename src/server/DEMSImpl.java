@@ -28,13 +28,15 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	private HashMap<String, ArrayList<Integer>> tradeShowsSubHashMap = new HashMap<String, ArrayList<Integer>>();
 
 	private HashMap<String, HashMap<String, ArrayList<Integer>>> mainHashMap = new HashMap<String,HashMap<String, ArrayList<Integer>>>();
-	
+
 	// A customer can not book more than one event with the same event id and same event type
 	// record of customerID, eventType+eventID (e.g. CTORA100519, first letter is event type), to make sure unique
 	
 	// TODO use concurrent hasmap
 	//private ConcurrentHashMap<String, ArrayList<String>> cBookingRecord = new ConcurrentHashMap<String, ArrayList<String>>();
 	
+
+	//MTLC2222<CTORA100519, SMTLA100519, ...>
 	private HashMap<String, ArrayList<String>> cBookingRecord = new HashMap<String, ArrayList<String>>();	
 	public HashMap<String, ArrayList<String>> getcBookingRecord() {
 		return cBookingRecord;
@@ -135,6 +137,18 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		} else { //if an event exists
 			// TODO if need to inform related customer, write here, otherwise no action needed
 			mainHashMap.get(eventType).remove(eventID);
+			
+			String eventTypeAbb = eventType.substring(0,1).toUpperCase();
+			String eventTypeAndID = eventTypeAbb + "" + eventID.trim();
+			
+			// also delete the corresponding cBookingRecord		
+			Set<String> keySet = cBookingRecord.keySet();			
+			for (String CID : keySet) {				
+				if (cBookingRecord.get(CID).contains(eventTypeAndID)) {
+					cBookingRecord.get(CID).remove(eventTypeAndID);
+				}
+			}
+			
 			returnMessage.add("Success");
 			returnMessage.add("Event " + eventID + " of " + eventType + " has been removed.");
 			//TODO write log into this manager
@@ -143,32 +157,42 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 	public ArrayList<String> listEventAvailability(String MID, String eventType){
 		// push a add event message to the processing queue.
-		// wait that the message is processed
+		// wait that the message is processed	
+
+		ArrayList<String> returnMessage = new ArrayList<String>(); // only return when combine info in all cities
 		
-		// TODO UDP to communicate with other cities, maybe need to adjust method.
+		ArrayList<String> returnMessageOwnCity = new ArrayList<String>();
+		ArrayList<String> returnMessageFirstOtherCity = new ArrayList<String>();
+		ArrayList<String> returnMessageSecondOtherCity = new ArrayList<String>();
 		
-		ArrayList<String> returnMessage = new ArrayList<String>();
-		String lineFormated;
-		
-		//below is for printing only the city of the manager. 		
-		String ownCity = MID.substring(0,3).toUpperCase();
 		returnMessage.add("Number of spaces available for each event:");
-		returnMessage.add(ownCity + ":");
-		
-		HashMap<String, ArrayList<Integer>> tempSubHashMap = mainHashMap.get(eventType);		
-		Set<String> keySet = tempSubHashMap.keySet();
-		
-		lineFormated = String.format("%-15s %-18s %-15s %-15s", "Event ID", "Total Capacity", "Booked Space", "Available Space");
+		String lineFormated = String.format("%-15s %-18s %-15s %-15s", "Event ID", "Total Capacity", "Booked Space", "Available Space");
 		returnMessage.add(lineFormated);
 		
+		//--------- begin of adding the event in own city---------------		
+		String ownCity = MID.substring(0,3).toUpperCase();
+		HashMap<String, ArrayList<Integer>> tempSubHashMap = mainHashMap.get(eventType);		
+		Set<String> keySet = tempSubHashMap.keySet();
+			
 		for (String s : keySet) {
 			String eID = s;
 			int totalCap = tempSubHashMap.get(s).get(0);
 			int bookedCap = tempSubHashMap.get(s).get(1);
 			int availableCap = totalCap-bookedCap;
 			lineFormated = String.format("%-15s %-18s %-15s %-15s", eID, totalCap, bookedCap, availableCap);
-			returnMessage.add(lineFormated);	
+			returnMessageOwnCity.add(lineFormated);	
 		}
+		//--------- end of adding the event in own city---------------
+		
+		//--------- begin of adding the event in first other city---------------
+		returnMessageFirstOtherCity = UDPCommunicationlistEventAvailability(MID, eventType, firstRemoteUDPPort);
+		
+		returnMessageSecondOtherCity = UDPCommunicationlistEventAvailability(MID, eventType, secondRemoteUDPPort);
+		
+		
+		returnMessage.addAll(returnMessageOwnCity);
+		returnMessage.addAll(returnMessageFirstOtherCity);
+		returnMessage.addAll(returnMessageSecondOtherCity);
 		return returnMessage;
 	}
 	
@@ -309,19 +333,26 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	
 		return  returnMessage;//return a ArrayList<String> to client, safe
 	}
-	//--------end of method "public ArrayList<String> getBookingSchedule(String customerID)"------------------
 	
-	public boolean cancelEvent(String customerID,String eventID){
+	public String cancelEvent(String customerID, String eventID, String eventType) {
 		// push a add event message to the processing queue.
 		// wait that the message is processed
+		String returnMessage = "";
+		String cityOfCustomer = customerID.substring(0, 3).trim();
+		String cityOfEvent = eventID.substring(0, 3).trim();
+		
+		// if this is to cancel the event in the own city
+		if (cityOfCustomer.equals(cityOfEvent)) {
+			
+		}
 
-		return true;//return true if action success
+		return returnMessage;
 	}
 
 	@Override
-	public String listEventAvailabilityForUDP() throws Exception {
-		//TODO:get what is needed
-		return null;
+	public HashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception {
+		HashMap<String, ArrayList<Integer>> eventSubHashMap = mainHashMap.get(eventType);
+		return eventSubHashMap;
 	}
 
 	@Override
@@ -505,6 +536,60 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		return returnMessageThisCity;
 	}
 
+	public ArrayList<String> UDPCommunicationlistEventAvailability(String managerID, String eventType, int remoteUDPPort){
+		ArrayList<String> returnMessageThisCity = new ArrayList<String>();
+		DatagramSocket aSocket = null;  //a buffer
+		String result =""; //initialize
+		try{
+			System.out.println("asking request");
+			aSocket = new DatagramSocket(); //reference of the original socket
+
+			String messageToSend = "listEventAvailability " + eventType;//the message you want to send, e.g. "getBookingSchedule TORC1234"
+			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+			InetAddress aHost = InetAddress.getByName("localhost");
+
+			int serverPort = remoteUDPPort;// defined for every server already in server classes
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			aSocket.send(request);//request sent out
+			System.out.println("Request message sent : "+ new String(request.getData()));
+			
+			//from here to below: after sending request, receive feedback from target city
+			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
+			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
+
+			//Client waits until the reply is received-----------------------------------------------------------------------
+			aSocket.receive(reply);//reply received and will populate reply packet now.
+			result = new String(reply.getData());
+			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes	
+			
+			
+			if (!result.trim().equals("")) {						
+				String[] replyArray = result.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
+				
+				for (int m = 0; m < replyArray.length; m=m+3) {
+					String eID = replyArray[m].trim();
+					String totalCap = replyArray[m+1].trim();
+					String bookedCap = replyArray[m+2].trim();
+					int availableCap = Integer.parseInt(totalCap) - Integer.parseInt(bookedCap);
+					
+					String lineFormated = String.format("%-15s %-18s %-15s %-15s", eID, totalCap, bookedCap, availableCap);
+					returnMessageThisCity.add(lineFormated);
+				}
+			}			
+		}
+		catch(SocketException e){
+			System.out.println("Socket: "+e.getMessage());
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.out.println("IO: "+e.getMessage());
+		} 
+		finally{
+			//if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
+			//resource leakage, therefore, close the socket after it's use is completed to release resources.
+		}
+		return returnMessageThisCity;
+	}
 
 
 	//TODO:ask request template

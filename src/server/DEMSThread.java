@@ -2,6 +2,8 @@ package server;
 
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 import java.rmi.registry.LocateRegistry;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -36,8 +38,28 @@ public class DEMSThread extends Thread{
                 String action = requestSplit[0].trim(); // e.g. method name, "getEventBookingSchedule"
                 
                 //TODO:need change, can split request to get more parameters and finish the task blow
-                if (action.equals("listEventAvailability")){
-                    //re = stub.listEventAvailabilityForUDP(param1, param2...);
+                if (action.equals("listEventAvailability")){                	
+                	String eventType = requestSplit[1].trim(); 
+                	
+                	StringBuffer sb = new StringBuffer();
+                	
+                	HashMap<String, ArrayList<Integer>> eventSubHashMap = stub.listEventAvailabilityForUDP(eventType);
+                	if (eventSubHashMap.size()!=0) {
+                		Set<String> keySet = eventSubHashMap.keySet();              	
+                    	for (String s : keySet) { // each event ID in this HashMap
+                			String eID = s.trim();
+                			int totalCap = eventSubHashMap.get(s).get(0);
+                			int bookedCap = eventSubHashMap.get(s).get(1);
+                			int availableCap = totalCap-bookedCap;
+                			String eachEventInfo = eID + " " + totalCap + " " + bookedCap + " ";
+                			sb.append(eachEventInfo);           			
+                		}
+                    
+                    	re = sb.toString().trim();
+                	} else {
+                		re = "";
+                	}                	
+
                 } else if (action.equals("bookEvent")){
                 	String customerID = requestSplit[1];
                 	String eventID = requestSplit[2];

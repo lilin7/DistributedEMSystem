@@ -134,7 +134,7 @@ public class DEMSClient {
 					try {
 						returnMessage = obj.addEvent(userID, eventID, eventType, bookingCapacity);
 					} catch (java.rmi.RemoteException e) {
-						
+						System.out.println("java.rmi.RemoteException: "+e.getMessage());
 					}
 					
 					if(returnMessage.get(0).equals("Added")) {						
@@ -162,7 +162,7 @@ public class DEMSClient {
 					try {
 						returnMessage = obj.removeEvent(userID, eventID, eventType);
 					} catch (java.rmi.RemoteException e) {
-
+						System.out.println("java.rmi.RemoteException: "+e.getMessage());
 					}
 					
 					if(returnMessage.get(0).equals("NoExist")) {
@@ -196,7 +196,7 @@ public class DEMSClient {
 						System.out.println();
 						//TODO: add log for this user
 					}else {
-						System.out.println("Failed in listing event availability.");
+						System.out.println("No record for such event type.");
 						//TODO: add log for this user
 					}
 					break;
@@ -299,20 +299,17 @@ public class DEMSClient {
 					String customerID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
+					String eventType = sc.nextLine().trim().toUpperCase();
 					
+					String returnMessage;
 					try {
-						result = obj.cancelEvent(customerID, eventID);
+						returnMessage = obj.cancelEvent(customerID, eventID, eventType);
 					} catch (java.rmi.RemoteException e) {
-						result = false;
+
 					}
 					
-					if(result) {
-						System.out.println("Success");
-						//TODO: add log for this user
-					}else {
-						System.out.println("Fail");
-						//TODO: add log for this user
-					}
+					
 					break;
 				}
 				case 0:
@@ -426,23 +423,22 @@ public class DEMSClient {
 				}
 				
 				case 3:{
-					System.out.println("Now performing: Cancel an event of yours.");
+					System.out.println("Now performing: Cancel event of a customer.");
+					System.out.println("Please enter customer ID: (format example: TORC2345)");
+					String customerID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
+					String eventType = sc.nextLine().trim().toUpperCase();
 					
+					String returnMessage;
 					try {
-						result = obj.cancelEvent(userID, eventID);
+						returnMessage = obj.cancelEvent(customerID, eventID, eventType);
 					} catch (java.rmi.RemoteException e) {
-						result = false;
+
 					}
 					
-					if(result) {
-						System.out.println("Success");
-						//TODO: add log for this user
-					}else {
-						System.out.println("Fail");
-						//TODO: add log for this user
-					}
+					
 					break;
 				}
 				case 0:
