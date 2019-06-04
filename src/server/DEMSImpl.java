@@ -27,6 +27,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	private HashMap<String, ArrayList<Integer>> seminarsSubHashMap = new HashMap<String, ArrayList<Integer>>();
 	private HashMap<String, ArrayList<Integer>> tradeShowsSubHashMap = new HashMap<String, ArrayList<Integer>>();
 
+	//<eventType, <eventID, <eventCapacity, spacedUsed>>>
 	private HashMap<String, HashMap<String, ArrayList<Integer>>> mainHashMap = new HashMap<String,HashMap<String, ArrayList<Integer>>>();
 
 	// A customer can not book more than one event with the same event id and same event type
@@ -337,15 +338,63 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	public String cancelEvent(String customerID, String eventID, String eventType) {
 		// push a add event message to the processing queue.
 		// wait that the message is processed
+		customerID = customerID.trim();
+		eventID = eventID.trim();
+		eventType = eventType.trim();
+		
+		String eventTypeAndID = eventType.substring(0,1) + "" + eventID; //create the info like "CTORA100519"
+		String monthYear = eventID.substring(6,10);
 		String returnMessage = "";
 		String cityOfCustomer = customerID.substring(0, 3).trim();
 		String cityOfEvent = eventID.substring(0, 3).trim();
-		
+	
 		// if this is to cancel the event in the own city
-		if (cityOfCustomer.equals(cityOfEvent)) {
-			
-		}
-
+		if (cityOfCustomer.equals(cityOfEvent)) { 
+			if (! (mainHashMap.get(eventType).containsKey(eventID))) { // if this event id of this type doesn't exist
+				returnMessage = "EventNotExist";
+			} else { // if this event id of this type exists
+				if ( ! cBookingRecord.containsKey(customerID)) { // if this customer never booked in own city (doesn't exist in cBookingRecord)
+					returnMessage = "CustomerNeverBooked";
+				} else {								
+					if ( ! cBookingRecord.get(customerID).contains(eventTypeAndID)) { // if this customer never booked this event in this type
+						returnMessage = "ThisCustomerHasNotBookedThis";
+					} else { // if everything is ok
+						cBookingRecord.get(customerID).remove(eventTypeAndID);
+						if (mainHashMap.get(eventType).get(eventID).get(1)>0) { //validate in mainHashMap
+							int newUsedSpace = mainHashMap.get(eventType).get(eventID).get(1)-1;
+							mainHashMap.get(eventType).get(eventID).set(1, newUsedSpace);
+							returnMessage = "Success";
+						} else {
+							returnMessage = "Capacity Error";
+						}
+					
+					}
+				}
+				
+			}
+		} else { // if this customer wants to cancel an event in other cities
+			//communicate by UDP with the target city
+			returnMessage = UDPCommunicationCancelEvent(customerID, eventID, eventType);
+			//if successfully cancelled an event in other city, need to update the record of booking in other cities, which is stored in customer's own city
+			if (returnMessage.equals("Success")) {
+				if (!cBookingOtherCity.containsKey(customerID)) {
+					returnMessage = "SuccessButNoSuchCustomerIncBookingOtherCity";
+				} else {
+					if ( ! cBookingOtherCity.get(customerID).containsKey(monthYear)) {
+						returnMessage = "SuccessButNoSuchMonthIncBookingOtherCity";
+					} else {
+						if ( ! (cBookingOtherCity.get(customerID).get(monthYear) >0)) { // the number of booking in this month in other cities should be at least 1
+							returnMessage = "SuccessButWrongNumberOfBookingIncBookingOtherCity";
+						} else {
+							int newBookingNumber = cBookingOtherCity.get(customerID).get(monthYear) -1;
+							cBookingOtherCity.get(customerID).put(monthYear, newBookingNumber);
+							returnMessage = "SuccessUpdatedAllRecords";
+						}
+					}
+				}
+			}			
+		}		
+		System.out.println(returnMessage);
 		return returnMessage;
 	}
 
@@ -434,11 +483,88 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 
 	@Override
-	public String cancelEventForUDP(String customerID, String eventID) throws Exception {
-		//TODO:get what is needed
-		return null;
+	// cancel the event happens in this city for a customer in other city
+	public String cancelEventForUDP(String customerID, String eventID, String eventType) throws Exception {
+		String returnMessage;
+		customerID = customerID.trim();
+		eventID = eventID.trim();
+		eventType = eventType.trim();		
+		String eventTypeAndID = eventType.substring(0,1) + "" + eventID; //create the info like "CTORA100519"
+		 
+		if (! mainHashMap.get(eventType).containsKey(eventID)) { // if this event id of this type doesn't exist
+			returnMessage = "EventNotExist";
+		} else { // if this event id of this type exists
+			if ( ! cBookingRecord.containsKey(customerID)) { // if this customer never booked in own city (doesn't exist in cBookingRecord)
+				returnMessage = "CustomerNeverBooked";
+			} else {								
+				if ( ! cBookingRecord.get(customerID).contains(eventTypeAndID)) { // if this customer never booked this event in this type
+					returnMessage = "ThisCustomerHasNotBookedThis";
+				} else { // if everything is ok
+					cBookingRecord.get(customerID).remove(eventTypeAndID); //update the cBookingRecord of target city
+					if (mainHashMap.get(eventType).get(eventID).get(1)>0) { //validate in mainHashMap's capacity record
+						int newUsedSpace = mainHashMap.get(eventType).get(eventID).get(1)-1;
+						mainHashMap.get(eventType).get(eventID).set(1, newUsedSpace);
+						returnMessage = "Success";
+					} else {
+						returnMessage = "Capacity Error";
+					}
+				}
+			}		
+		}	
+		return returnMessage.trim();
 	}
 	
+	public String UDPCommunicationCancelEvent(String customerID, String eventID, String eventType) {
+		// judge which is the target city
+		String cityAbb = eventID.trim().substring(0, 3).trim();
+		int targetUDPPortNumber = 0;
+		if (cityAbb.equals("MTL")) {
+			targetUDPPortNumber = MTLRemoteUDPPortNumber;
+		} else if (cityAbb.equals("OTW")){
+			targetUDPPortNumber = OTWRemoteUDPPortNumber;
+		} else if (cityAbb.equals("TOR")){
+			targetUDPPortNumber = TORRemoteUDPPortNumber;
+		}
+		System.out.println(targetUDPPortNumber);
+		DatagramSocket aSocket = null;  //a buffer
+		String result =""; //initialize
+		
+		try{
+			System.out.println("asking request");
+			aSocket = new DatagramSocket(); //reference of the original socket
+
+			String messageToSend = "cancelEvent " + customerID + " " + eventID + " " + eventType;//the message you want to send, e.g. "bookEvent TORC1234 OTWA100519 Conferences"
+			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
+			InetAddress aHost = InetAddress.getByName("localhost");
+
+			int serverPort = targetUDPPortNumber;// defined for every server already in server classes
+			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
+			aSocket.send(request);//request sent out
+			System.out.println("Request message sent : "+ new String(request.getData()));
+			
+			//from here to below: after sending request, receive feedback from target city
+			byte [] buffer = new byte[1000];//to store the received data, it will be populated by what receive method returns
+			DatagramPacket reply = new DatagramPacket(buffer, buffer.length);//reply packet ready but not populated.
+
+			//Client waits until the reply is received-----------------------------------------------------------------------
+			aSocket.receive(reply);//reply received and will populate reply packet now.
+			result = new String(reply.getData());
+			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes		
+		}
+		catch(SocketException e){
+			System.out.println("Socket: "+e.getMessage());
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			System.out.println("IO: "+e.getMessage());
+		} 
+		finally{
+			//if(aSocket != null) aSocket.close();//now all resources used by the socket are returned to the OS, so that there is no
+			//resource leakage, therefore, close the socket after it's use is completed to release resources.
+		}
+		return result;
+	}
+
 	public String UDPCommunicationBookEvent(String customerID, String eventID, String eventType) {
 		// judge which is the target city
 		String cityAbb = eventID.substring(0, 3);

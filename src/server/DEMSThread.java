@@ -89,7 +89,13 @@ public class DEMSThread extends Thread{
                 		re = "";
                 	}              	              	
                 }else if(action.equals("cancelEvent")){
-                    //re = stub.cancelEventForUDP(param1, param2...);
+                	String customerID = requestSplit[1];
+                	String eventID = requestSplit[2];
+                	String eventType = requestSplit[3];
+                	
+                	re = stub.cancelEventForUDP(customerID, eventID, eventType).trim(); 
+                	//e.g. "Success", "EventNotExist", "CustomerNeverBooked", "ThisCustomerHasNotBookedThis", "Capacity Error"
+                	    	
                 }else{
                     //error massage
                 }

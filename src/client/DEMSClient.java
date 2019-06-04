@@ -300,16 +300,36 @@ public class DEMSClient {
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
-					String eventType = sc.nextLine().trim().toUpperCase();
+					String eventType = sc.nextLine().trim();
 					
-					String returnMessage;
+					String returnMessage = "";
 					try {
-						returnMessage = obj.cancelEvent(customerID, eventID, eventType);
+						returnMessage = obj.cancelEvent(customerID, eventID, eventType).trim();
 					} catch (java.rmi.RemoteException e) {
 
 					}
-					
-					
+					returnMessage=returnMessage.trim();
+					if (returnMessage.equals("Success")) {
+						System.out.println("Successfully cancelled a space of customer " + customerID + " in event type: " + eventType + " with event ID " + eventID);
+					} else if (returnMessage.equals("EventNotExist")) {
+						System.out.println("This event of this type doesn't exist.");
+					} else if (returnMessage.equals("CustomerNeverBooked")) {
+						System.out.println("This customer doesn't exist in the database.");
+					} else if (returnMessage.equals("ThisCustomerHasNotBookedThis")) {
+						System.out.println("This customer has never booked this event.");
+					} else if (returnMessage.equals("Capacity Error")) {
+						System.out.println("There is something wrong in the capacity record.");
+					} else if (returnMessage.equals("SuccessButNoSuchCustomerIncBookingOtherCity")) {
+						System.out.println("Successfully cancelled in the target city, but NoSuchCustomerIncBookingOtherCity.");
+					} else if (returnMessage.equals("SuccessButNoSuchMonthIncBookingOtherCity")) {
+						System.out.println("Successfully cancelled in the target city, but NoSuchMonthIncBookingOtherCity.");
+					} else if (returnMessage.equals("SuccessButWrongNumberOfBookingIncBookingOtherCity")) {
+						System.out.println("Successfully cancelled in the target city, but WrongNumberOfBookingIncBookingOtherCity.");
+					} else if (returnMessage.equals("SuccessUpdatedAllRecords")) {
+						System.out.println("Successfully cancelled a space of customer " + customerID + " in event type: " + eventType + " with event ID " + eventID + "in target city");
+					} else {
+						System.out.println("wrong message received.");
+					}
 					break;
 				}
 				case 0:
@@ -423,22 +443,40 @@ public class DEMSClient {
 				}
 				
 				case 3:{
-					System.out.println("Now performing: Cancel event of a customer.");
-					System.out.println("Please enter customer ID: (format example: TORC2345)");
-					String customerID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Now performing: Cancel an event that you have booked.");
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
-					String eventType = sc.nextLine().trim().toUpperCase();
+					String eventType = sc.nextLine().trim();
 					
-					String returnMessage;
+					String returnMessage = "";
 					try {
-						returnMessage = obj.cancelEvent(customerID, eventID, eventType);
+						returnMessage = obj.cancelEvent(userID, eventID, eventType);
 					} catch (java.rmi.RemoteException e) {
 
 					}
 					
-					
+					if (returnMessage.equals("Success")) {
+						System.out.println("Successfully cancelled a space for you in event type: " + eventType + " with event ID " + eventID);
+					} else if (returnMessage.equals("EventNotExist")) {
+						System.out.println("This event of this type doesn't exist.");
+					} else if (returnMessage.equals("CustomerNeverBooked")) {
+						System.out.println("You don't exist in the database.");
+					} else if (returnMessage.equals("ThisCustomerHasNotBookedThis")) {
+						System.out.println("You have never booked this event.");
+					} else if (returnMessage.equals("Capacity Error")) {
+						System.out.println("There is something wrong in the capacity record.");
+					} else if (returnMessage.equals("SuccessButNoSuchCustomerIncBookingOtherCity")) {
+						System.out.println("Successfully cancelled in the target city, but NoSuchCustomerIncBookingOtherCity.");
+					} else if (returnMessage.equals("SuccessButNoSuchMonthIncBookingOtherCity")) {
+						System.out.println("Successfully cancelled in the target city, but NoSuchMonthIncBookingOtherCity.");
+					} else if (returnMessage.equals("SuccessButWrongNumberOfBookingIncBookingOtherCity")) {
+						System.out.println("Successfully cancelled in the target city, but WrongNumberOfBookingIncBookingOtherCity.");
+					} else if (returnMessage.equals("SuccessUpdatedAllRecords")) {
+						System.out.println("Successfully cancelled a space for you in event type: " + eventType + " with event ID " + eventID + "in target city");
+					} else {
+						System.out.println("wrong message received.");
+					}
 					break;
 				}
 				case 0:
