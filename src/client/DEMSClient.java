@@ -218,7 +218,7 @@ public class DEMSClient {
 					}
 					
 					if(returnMessage.get(0).equals("NoExist")) {
-						System.out.println("Fail. The event you attampt to book doesn't exist.");
+						System.out.println("Fail. The event you attempt to book doesn't exist.");
 						//TODO: add log for this user
 					}else if (returnMessage.get(0).equals("Full")){
 						System.out.println("Fail. This event is fully booked.");

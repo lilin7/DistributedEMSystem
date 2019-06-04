@@ -91,7 +91,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	// for the message, do the appropriate action over the maps of data
 	// (add, remove, create a list, respond to the other servers)
 	
-	public ArrayList<String> addEvent(String MID,String eventID, String eventType, int bookingCapacity){
+	public synchronized ArrayList<String> addEvent(String MID,String eventID, String eventType, int bookingCapacity){
 		// push a add event message to the processing queue.
 		// wait that the message is processed
 		
@@ -125,7 +125,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		}
 	}
 
-	public ArrayList<String> removeEvent(String MID , String eventID, String eventType){
+	public synchronized ArrayList<String> removeEvent(String MID , String eventID, String eventType){
 		// push a add event message to the processing queue.
 		// wait that the message is processed
 		
@@ -156,7 +156,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			return returnMessage;
 		}
 	}
-	public ArrayList<String> listEventAvailability(String MID, String eventType){
+	public synchronized ArrayList<String> listEventAvailability(String MID, String eventType){
 		// push a add event message to the processing queue.
 		// wait that the message is processed	
 
@@ -197,7 +197,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		return returnMessage;
 	}
 	
-	public ArrayList<String> bookEvent(String customerID, String eventID, String eventType){
+	public synchronized ArrayList<String> bookEvent(String customerID, String eventID, String eventType){
 		// push a add event message to the processing queue.
 		// wait that the message is processed
 		ArrayList<String> returnMessage = new ArrayList<String>();
@@ -300,7 +300,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		}
 	}
 
-	public ArrayList<String> getBookingSchedule(String customerID){
+	public synchronized ArrayList<String> getBookingSchedule(String customerID){
 		// push a add event message to the processing queue.
 		// wait that the message is processed
 		
@@ -335,7 +335,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		return  returnMessage;//return a ArrayList<String> to client, safe
 	}
 	
-	public String cancelEvent(String customerID, String eventID, String eventType) {
+	public synchronized String cancelEvent(String customerID, String eventID, String eventType) {
 		// push a add event message to the processing queue.
 		// wait that the message is processed
 		customerID = customerID.trim();
@@ -406,7 +406,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 	@Override
 	//book event in my city upon request of other cities, no record needed in cBookingOtherCites in target city, it is managed by its own city
-	public ArrayList<String> bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
+	public synchronized ArrayList<String> bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
 		ArrayList<String> returnMessage = new ArrayList<String>();
 		customerID = customerID.trim();
 		eventType = eventType.trim();
@@ -476,7 +476,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 	@Override
 	// done this method
-	public ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception {
+	public synchronized ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception {
 		//get a ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)		
 		ArrayList<String> returnMessageThisCity = cBookingRecord.get(customerID); 
 		return returnMessageThisCity;
@@ -484,7 +484,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 	@Override
 	// cancel the event happens in this city for a customer in other city
-	public String cancelEventForUDP(String customerID, String eventID, String eventType) throws Exception {
+	public synchronized String cancelEventForUDP(String customerID, String eventID, String eventType) throws Exception {
 		String returnMessage;
 		customerID = customerID.trim();
 		eventID = eventID.trim();
