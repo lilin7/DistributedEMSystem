@@ -16,7 +16,7 @@ public class DEMSOTWServer {
 		int TORRemoteUDPPortNumber = DEMSInterface.UDP_PORT_TOR;
 		int OTWRemoteUDPPortNumber = DEMSInterface.UDP_PORT_OTW;
 
-		DEMSImpl stub = new DEMSImpl(firstRemoteUDPPortNumber,secondRemoteUDPPortNumber);
+		DEMSImpl stub = new DEMSImpl(firstRemoteUDPPortNumber,secondRemoteUDPPortNumber,"OTW");
 		Registry registry = LocateRegistry.createRegistry(localRMIPortNumber);
 		registry.bind("OTWServer",stub);
 

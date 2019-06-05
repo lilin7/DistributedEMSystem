@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2019-06-05T16:33:47</date>
+  <millis>1559766827380</millis>
+  <sequence>0</sequence>
+  <logger>MTL</logger>
+  <level>INFO</level>
+  <class>server.DEMSImpl</class>
+  <method>&lt;init&gt;</method>
+  <thread>1</thread>
+  <message>log start</message>
+</record>
+<record>
+  <date>2019-06-05T16:34:28</date>
+  <millis>1559766868477</millis>
+  <sequence>1</sequence>
+  <logger>MTL</logger>
+  <level>INFO</level>
+  <class>server.DEMSImpl</class>
+  <method>addEvent</method>
+  <thread>21</thread>
+  <message>request: add event</message>
+</record>
+<record>
+  <date>2019-06-05T16:34:28</date>
+  <millis>1559766868478</millis>
+  <sequence>2</sequence>
+  <logger>MTL</logger>
+  <level>INFO</level>
+  <class>server.DEMSImpl</class>
+  <method>addEvent</method>
+  <thread>21</thread>
+  <message>manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 5</message>
+</record>
+<record>
+  <date>2019-06-05T16:34:28</date>
+  <millis>1559766868482</millis>
+  <sequence>3</sequence>
+  <logger>MTL</logger>
+  <level>INFO</level>
+  <class>server.DEMSImpl</class>
+  <method>addEvent</method>
+  <thread>21</thread>
+  <message>New event added.</message>
+</record>

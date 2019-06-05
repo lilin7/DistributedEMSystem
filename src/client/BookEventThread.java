@@ -35,10 +35,10 @@ public class BookEventThread implements Runnable{
 
             if(returnMessage.get(0).equals("NoExist")) {
                 System.out.println("Fail. The event you attempt to book doesn't exist.");
-                //TODO: add log for this user
+
             }else if (returnMessage.get(0).equals("Full")){
                 System.out.println("customer: "+customerID+" Fail. This event is fully booked.");
-                //TODO: add log for this user
+
             } else if (returnMessage.get(0).trim().equals("Success")) {
                 System.out.println(customerID+" have successfully booked a space in:  \n"
                         + "Event type: " + eventType + "; Event ID: " + eventID + ".");
