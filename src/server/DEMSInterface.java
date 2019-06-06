@@ -3,13 +3,14 @@ package server;
 import java.rmi.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 /**
  * This is a remote interface.
  */
 public interface DEMSInterface extends Remote {
 	// port number need to start from 1025
 	   public final int PORT_MTL = 1028;
-	   public final int PORT_OTW = 1026;
+	   public final int PORT_OTW = 1033;
 	   public final int PORT_TOR = 1029;
 
 	   public final int UDP_PORT_MTL = 5555;
@@ -29,7 +30,7 @@ public interface DEMSInterface extends Remote {
 	   public String cancelEvent(String customerID, String eventID, String eventType) throws java.rmi.RemoteException;
 
 	   //TODO:change return value and parameters if necessary
-	   public HashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception;
+	   public ConcurrentHashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception;
 
 	   public ArrayList<String> bookEventForUDP(String customerID,String eventID,String eventType) throws Exception;
 

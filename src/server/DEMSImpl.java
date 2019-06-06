@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
 /**
  * This class implements the remote interface server.DEMSInterface.
@@ -23,12 +24,12 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	
 	// in sub-HashMap, key is event ID, value is a integer ArrayList, 
 	// element 0 is the booking capacity, element 1 is number already booked
-	private HashMap<String, ArrayList<Integer>> conferencesSubHashMap = new HashMap<String, ArrayList<Integer>>();
-	private HashMap<String, ArrayList<Integer>> seminarsSubHashMap = new HashMap<String, ArrayList<Integer>>();
-	private HashMap<String, ArrayList<Integer>> tradeShowsSubHashMap = new HashMap<String, ArrayList<Integer>>();
+	private ConcurrentHashMap<String, ArrayList<Integer>> conferencesSubHashMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
+	private ConcurrentHashMap<String, ArrayList<Integer>> seminarsSubHashMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
+	private ConcurrentHashMap<String, ArrayList<Integer>> tradeShowsSubHashMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
 
 	//<eventType, <eventID, <eventCapacity, spacedUsed>>>
-	private HashMap<String, HashMap<String, ArrayList<Integer>>> mainHashMap = new HashMap<String,HashMap<String, ArrayList<Integer>>>();
+	private ConcurrentHashMap<String, ConcurrentHashMap<String, ArrayList<Integer>>> mainHashMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, ArrayList<Integer>>>();
 
 	// A customer can not book more than one event with the same event id and same event type
 	// record of customerID, eventType+eventID (e.g. CTORA100519, first letter is event type), to make sure unique
@@ -38,13 +39,13 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	
 
 	//MTLC2222<CTORA100519, SMTLA100519, ...>
-	private HashMap<String, ArrayList<String>> cBookingRecord = new HashMap<String, ArrayList<String>>();	
-	public HashMap<String, ArrayList<String>> getcBookingRecord() {
+	private ConcurrentHashMap<String, ArrayList<String>> cBookingRecord = new ConcurrentHashMap<String, ArrayList<String>>();	
+	public ConcurrentHashMap<String, ArrayList<String>> getcBookingRecord() {
 		return cBookingRecord;
 	}
 
 	// a customer can book at most 3 events from other cities overall in a month. <CustomerID, <monthYear, numberOfBooking>
-	private HashMap<String, HashMap<String, Integer>> cBookingOtherCity = new HashMap<String, HashMap<String, Integer>> ();
+	private ConcurrentHashMap<String, HashMap<String, Integer>> cBookingOtherCity = new ConcurrentHashMap<String, HashMap<String, Integer>> ();
 
 
 	//remote udp port for request other servers
@@ -113,7 +114,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		serverLogger.info("manager id: "+MID+" event id: "+eventID+" event type: "+eventType+" capacity: "+ bookingCapacity+"\n");
 
 		if (!mainHashMap.get(eventType).containsKey(eventID)) { //If an event does not exist in the database for that event type, then add it.
-			HashMap<String, ArrayList<Integer>> tempSubHashMap = mainHashMap.get(eventType);
+			ConcurrentHashMap<String, ArrayList<Integer>> tempSubHashMap = mainHashMap.get(eventType);
 			ArrayList<Integer> tempCapArrayList = new ArrayList<Integer>();
 			tempCapArrayList.add(bookingCapacity);
 			tempCapArrayList.add(0);
@@ -194,7 +195,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		
 		//--------- begin of adding the event in own city---------------		
 		String ownCity = MID.substring(0,3).toUpperCase();
-		HashMap<String, ArrayList<Integer>> tempSubHashMap = mainHashMap.get(eventType);		
+		ConcurrentHashMap<String, ArrayList<Integer>> tempSubHashMap = mainHashMap.get(eventType);		
 		Set<String> keySet = tempSubHashMap.keySet();
 			
 		for (String s : keySet) {
@@ -312,7 +313,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 						}
 					}
 				} else { //if customer exists in cBookingOtherCity but never booked this month, also can book
-					result = UDPCommunicationBookEvent(customerID, eventID, eventType);
+					result = UDPCommunicationBookEvent(customerID, eventID, eventType).trim();
 				
 					// create this month, put 1
 					if (result.equals("Success")) {
@@ -452,9 +453,9 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 
 	@Override
-	public HashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception {
+	public ConcurrentHashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception {
 		serverLogger.info("request: list event availability for other server"+"\n");
-		HashMap<String, ArrayList<Integer>> eventSubHashMap = mainHashMap.get(eventType);
+		ConcurrentHashMap<String, ArrayList<Integer>> eventSubHashMap = mainHashMap.get(eventType);
 		return eventSubHashMap;
 	}
 
@@ -680,6 +681,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			//Client waits until the reply is received-----------------------------------------------------------------------
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
+			result = result.trim();
 			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes		
 		}
 		catch(SocketException e){

@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 import server.DEMSInterface;
 
-public class BookEventThread implements Runnable{
+public class SynchronizedMethodThread implements Runnable{
 
     private String customerID;
     private String eventID;
@@ -18,7 +18,7 @@ public class BookEventThread implements Runnable{
     private int MTLportNumber = 1028;
     private String ServerName = "MTLServer";
 
-    public BookEventThread(String customerID, String eventID, String eventType){
+    public SynchronizedMethodThread(String customerID, String eventID, String eventType){
         this.customerID = customerID;
         this.eventID = eventID;
         this.eventType = eventType;

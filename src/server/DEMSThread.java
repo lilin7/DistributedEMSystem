@@ -4,6 +4,7 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.rmi.registry.LocateRegistry;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -43,7 +44,7 @@ public class DEMSThread extends Thread{
                 	
                 	StringBuffer sb = new StringBuffer();
                 	
-                	HashMap<String, ArrayList<Integer>> eventSubHashMap = stub.listEventAvailabilityForUDP(eventType);
+                	ConcurrentHashMap<String, ArrayList<Integer>> eventSubHashMap = stub.listEventAvailabilityForUDP(eventType);
                 	if (eventSubHashMap.size()!=0) {
                 		Set<String> keySet = eventSubHashMap.keySet();              	
                     	for (String s : keySet) { // each event ID in this HashMap

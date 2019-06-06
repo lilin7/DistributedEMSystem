@@ -228,10 +228,18 @@ public class DEMSClient {
 					System.out.println("Now performing: Book event for a customer.");
 					System.out.println("Please enter customer ID: (format example: TORC2345)");
 					String customerID = sc.nextLine().trim().toUpperCase();
+					
+					String managerCity = userID.substring(0,3);
+					String customerCity = customerID.substring(0,3);
+					if (!managerCity.equals(customerCity)) {
+						System.out.println("A manager can only operate for a customer in your own city.");
+						break;
+					}	
+					
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
-					String eventType = sc.nextLine().trim();
+					String eventType = sc.nextLine().trim();					
 					
 					ArrayList<String> returnMessage = new ArrayList<String>();
 
@@ -268,6 +276,13 @@ public class DEMSClient {
 					System.out.println("Please enter customer ID: (format example: TORC2345)");
 					String customerID = sc.nextLine().trim().toUpperCase();
 					
+					String managerCity = userID.substring(0,3);
+					String customerCity = customerID.substring(0,3);
+					if (!managerCity.equals(customerCity)) {
+						System.out.println("A manager can only operate for a customer in your own city.");
+						break;
+					}	
+					
 					ArrayList<String> returnMessage = new ArrayList<String>();
 
 					clientLogger.info("show booking schedule for customer : manager id: "+userID+" customer id: "+customerID+"\n");
@@ -281,7 +296,7 @@ public class DEMSClient {
 						System.out.println("Now printing booking schedule for customer " + customerID + ":");
 						System.out.printf("%-15s %-18s %-15s", "City", "Event Type", "Event ID");
 						System.out.println();
-						clientLogger.info("information showed"+"\n");
+						
 						for (String s : returnMessage) {	
 							String subStringCity = s.trim().substring(1, 4);
 							String subStringEventType = s.trim().substring(0, 1);
@@ -322,6 +337,7 @@ public class DEMSClient {
 								}
 							}	
 						}
+						clientLogger.info("information showed"+"\n");
 					}
 					
 					break;
@@ -330,6 +346,14 @@ public class DEMSClient {
 					System.out.println("Now performing: Cancel event of a customer.");
 					System.out.println("Please enter customer ID: (format example: TORC2345)");
 					String customerID = sc.nextLine().trim().toUpperCase();
+					
+					String managerCity = userID.substring(0,3);
+					String customerCity = customerID.substring(0,3);
+					if (!managerCity.equals(customerCity)) {
+						System.out.println("A manager can only operate for a customer in your own city.");
+						break;
+					}	
+					
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
@@ -503,7 +527,7 @@ public class DEMSClient {
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
-					String eventType = sc.nextLine().trim();
+					String eventType = sc.nextLine().trim();					
 
 					clientLogger.info("cancel an event: customer id:"+userID+" event id: "+eventID+" event type: "+eventType+"\n");
 
