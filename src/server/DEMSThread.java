@@ -37,8 +37,7 @@ public class DEMSThread extends Thread{
                 String requestToString = new String(request.getData()); //receive message from source city
                 String[] requestSplit = requestToString.split("\\s+");
                 String action = requestSplit[0].trim(); // e.g. method name, "getEventBookingSchedule"
-                
-                //TODO:need change, can split request to get more parameters and finish the task blow
+                              
                 if (action.equals("listEventAvailability")){                	
                 	String eventType = requestSplit[1].trim(); 
                 	
@@ -111,7 +110,6 @@ public class DEMSThread extends Thread{
         } catch (IOException e) {
             System.out.println("IO: " + e.getMessage());
         } catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
             if (aSocket != null)

@@ -28,8 +28,6 @@ public class DEMSClient {
 
 	public static void main(String[] args){
 		try {
-
-			// TODO change the name you'll get confused
 			String userID = "";
 			boolean IDFlag = false;
 			InputStreamReader is = new InputStreamReader(System.in);
@@ -579,6 +577,4 @@ public class DEMSClient {
 		}
 		while (user_input != 0);
 	}
-
-
 }

@@ -29,7 +29,6 @@ public interface DEMSInterface extends Remote {
 
 	   public String cancelEvent(String customerID, String eventID, String eventType) throws java.rmi.RemoteException;
 
-	   //TODO:change return value and parameters if necessary
 	   public ConcurrentHashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception;
 
 	   public ArrayList<String> bookEventForUDP(String customerID,String eventID,String eventType) throws Exception;

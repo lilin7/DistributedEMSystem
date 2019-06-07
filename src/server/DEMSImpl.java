@@ -19,9 +19,7 @@ import java.util.logging.*;
  */
 
 public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
-	//hashmap
-	//hashmap(id, number)
-	
+
 	// in sub-HashMap, key is event ID, value is a integer ArrayList, 
 	// element 0 is the booking capacity, element 1 is number already booked
 	private ConcurrentHashMap<String, ArrayList<Integer>> conferencesSubHashMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
@@ -30,15 +28,10 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 	//<eventType, <eventID, <eventCapacity, spacedUsed>>>
 	private ConcurrentHashMap<String, ConcurrentHashMap<String, ArrayList<Integer>>> mainHashMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, ArrayList<Integer>>>();
-
+	
 	// A customer can not book more than one event with the same event id and same event type
 	// record of customerID, eventType+eventID (e.g. CTORA100519, first letter is event type), to make sure unique
-	
-	// TODO use concurrent hasmap
-	//private ConcurrentHashMap<String, ArrayList<String>> cBookingRecord = new ConcurrentHashMap<String, ArrayList<String>>();
-	
-
-	//MTLC2222<CTORA100519, SMTLA100519, ...>
+	// MTLC2222<CTORA100519, SMTLA100519, ...>
 	private ConcurrentHashMap<String, ArrayList<String>> cBookingRecord = new ConcurrentHashMap<String, ArrayList<String>>();	
 	public ConcurrentHashMap<String, ArrayList<String>> getcBookingRecord() {
 		return cBookingRecord;
@@ -46,7 +39,6 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 
 	// a customer can book at most 3 events from other cities overall in a month. <CustomerID, <monthYear, numberOfBooking>
 	private ConcurrentHashMap<String, HashMap<String, Integer>> cBookingOtherCity = new ConcurrentHashMap<String, HashMap<String, Integer>> ();
-
 
 	//remote udp port for request other servers
 	private int firstRemoteUDPPort;
@@ -79,35 +71,10 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		fh.setFormatter(new SimpleFormatter());
 		serverLogger.addHandler(fh);
 
-		serverLogger.info("log start"+"\n");
-
-		// TODO start a UDP socket (use unused port like 1031-3) in accept, in another thread
-        // TODO open UPD socket on others
-		
-		// you should start a processing thread and define a message class that is processed in order to ensure synchronization		
-		
-		/* example of the kind of message class
-		class message
-		{		    
-			wait () { aquire lock }
-			
-			constructor : push message specifics
-			
-			process message : do the things you need to do, then unlock.
-			either create a message processing method or take the data out and do it in a switch case
-		}
-		*/
+		serverLogger.info("log start"+"\n");		
 	}
-	// processing thread should wait that the message queue contains a message
-	// consume it
-	// unlock the message to notify the Method invoked that this is over
-	// for the message, do the appropriate action over the maps of data
-	// (add, remove, create a list, respond to the other servers)
 	
-	public synchronized ArrayList<String> addEvent(String MID,String eventID, String eventType, int bookingCapacity){
-		// push a add event message to the processing queue.
-		// wait that the message is processed
-		
+	public synchronized ArrayList<String> addEvent(String MID,String eventID, String eventType, int bookingCapacity){		
 		ArrayList<String> returnMessage = new ArrayList<String>();		
 
 		serverLogger.info("request: add event"+"\n");
@@ -142,9 +109,6 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 
 	public synchronized ArrayList<String> removeEvent(String MID , String eventID, String eventType){
-		// push a add event message to the processing queue.
-		// wait that the message is processed
-		
 		ArrayList<String> returnMessage = new ArrayList<String>();
 
 		serverLogger.info("request: remove event"+"\n");
@@ -177,9 +141,6 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		}
 	}
 	public synchronized ArrayList<String> listEventAvailability(String MID, String eventType){
-		// push a add event message to the processing queue.
-		// wait that the message is processed	
-
 		ArrayList<String> returnMessage = new ArrayList<String>(); // only return when combine info in all cities
 		
 		ArrayList<String> returnMessageOwnCity = new ArrayList<String>();
@@ -222,8 +183,6 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 	
 	public synchronized ArrayList<String> bookEvent(String customerID, String eventID, String eventType){
-		// push a add event message to the processing queue.
-		// wait that the message is processed
 		ArrayList<String> returnMessage = new ArrayList<String>();
 
 		serverLogger.info("request: book event"+"\n");
@@ -341,9 +300,6 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 
 	public synchronized ArrayList<String> getBookingSchedule(String customerID){
-		// push a add event message to the processing queue.
-		// wait that the message is processed
-
 		serverLogger.info("request: get booking schedule"+"\n");
 		serverLogger.info("customer id: "+customerID+"\n");
 		ArrayList<String> returnMessage = new ArrayList<String>(); // only return when combine info in all cities
@@ -378,8 +334,6 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	}
 	
 	public synchronized String cancelEvent(String customerID, String eventID, String eventType) {
-		// push a add event message to the processing queue.
-		// wait that the message is processed
 		customerID = customerID.trim();
 		eventID = eventID.trim();
 		eventType = eventType.trim();
@@ -417,7 +371,6 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 							returnMessage = "Capacity Error";
 							serverLogger.info("Capacity Error"+"\n");
 						}
-					
 					}
 				}
 				
@@ -628,6 +581,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			//Client waits until the reply is received-----------------------------------------------------------------------
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
+			result = result.trim();
 			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes		
 		}
 		catch(SocketException e){
@@ -724,6 +678,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			//Client waits until the reply is received-----------------------------------------------------------------------
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
+			result = result.trim();
 			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes	
 			if (!result.trim().equals("")) {						
 				String[] replyArray = result.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
@@ -772,8 +727,8 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			//Client waits until the reply is received-----------------------------------------------------------------------
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
-			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes	
-			
+			result = result.trim();
+			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes				
 			
 			if (!result.trim().equals("")) {						
 				String[] replyArray = result.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
@@ -804,6 +759,4 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		}
 		return returnMessageThisCity;
 	}
-
-
 }
