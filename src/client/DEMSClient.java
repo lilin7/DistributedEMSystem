@@ -135,8 +135,22 @@ public class DEMSClient {
 					System.out.println("Now performing: Add an event.");
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
+					
+					String managerCity = userID.substring(0,3);
+					String eventCity = eventID.substring(0,3);
+					if (!managerCity.equals(eventCity)) {
+						System.out.println("A manager can only add event in your own city.");
+						break;
+					}
+					
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();
+					
+					if ((!eventType.equals("Conferences")) && (!eventType.equals("Seminars") ) && (!eventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
+					
 					System.out.println("Please enter a number for Booking Capacity:");
 					int bookingCapacity = Integer.parseInt(sc.nextLine().trim());
 
@@ -172,8 +186,21 @@ public class DEMSClient {
 					System.out.println("Now performing: Remove an event.");
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
+					
+					String managerCity = userID.substring(0,3);
+					String eventCity = eventID.substring(0,3);
+					if (!managerCity.equals(eventCity)) {
+						System.out.println("A manager can only add event in your own city.");
+						break;
+					}
+					
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();
+					
+					if ((!eventType.equals("Conferences")) && (!eventType.equals("Seminars") ) && (!eventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
 
 					clientLogger.info("remove an event: user id: "+userID+" event id: "+eventID+" event type: "+eventType+"\n");
 					ArrayList<String> returnMessage = new ArrayList<String>();
@@ -200,6 +227,11 @@ public class DEMSClient {
 					System.out.println("Now performing: List event availability.");
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();	
+					
+					if ((!eventType.equals("Conferences")) && (!eventType.equals("Seminars") ) && (!eventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
 					
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					clientLogger.info("list event availability : user id: "+userID+" event type: "+eventType+"\n");
@@ -237,7 +269,12 @@ public class DEMSClient {
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
-					String eventType = sc.nextLine().trim();					
+					String eventType = sc.nextLine().trim();		
+					
+					if ((!eventType.equals("Conferences")) && (!eventType.equals("Seminars") ) && (!eventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
 					
 					ArrayList<String> returnMessage = new ArrayList<String>();
 
@@ -357,6 +394,11 @@ public class DEMSClient {
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();
 
+					if ((!eventType.equals("Conferences")) && (!eventType.equals("Seminars") ) && (!eventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
+					
 					clientLogger.info("manager cancel event for customer: manager id: "+userID+" customer id: "+customerID+"\n");
 
 					String returnMessage = "";
@@ -433,6 +475,11 @@ public class DEMSClient {
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
 					String eventType = sc.nextLine().trim();
+					
+					if ((!eventType.equals("Conferences")) && (!eventType.equals("Seminars") ) && (!eventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
 
 					clientLogger.info("customer book event: customer id: "+userID+" event id: "+eventID+" event type: "+eventType+"\n");
 
@@ -525,7 +572,12 @@ public class DEMSClient {
 					System.out.println("Please enter event ID: (format example: MTLE100519)");
 					String eventID = sc.nextLine().trim().toUpperCase();
 					System.out.println("Please enter event type: Conferences, Seminars, TradeShows");
-					String eventType = sc.nextLine().trim();					
+					String eventType = sc.nextLine().trim();	
+					
+					if ((!eventType.equals("Conferences")) && (!eventType.equals("Seminars") ) && (!eventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
 
 					clientLogger.info("cancel an event: customer id:"+userID+" event id: "+eventID+" event type: "+eventType+"\n");
 
