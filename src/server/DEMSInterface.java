@@ -28,6 +28,8 @@ public interface DEMSInterface extends Remote {
 	   public ArrayList<String> getBookingSchedule(String customerID) throws java.rmi.RemoteException;
 
 	   public String cancelEvent(String customerID, String eventID, String eventType) throws java.rmi.RemoteException;
+	   
+	   public ArrayList<String> swapEvent(String customerID, String newEventID, String newEventType, String oldEventID, String oldEventType) throws java.rmi.RemoteException;
 
 	   public ConcurrentHashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception;
 

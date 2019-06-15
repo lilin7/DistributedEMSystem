@@ -124,6 +124,7 @@ public class DEMSClient {
 					+"4. Book event for a customer  \n"
 					+"5. Get booking schedule of a customer  \n"
 					+"6. Cancel event of a customer \n"
+					+"7. Swap two events for a customer \n"
 					+"0. Quit \n"
 					);
 
@@ -441,6 +442,100 @@ public class DEMSClient {
 					}
 					break;
 				}
+				case 7:{ //to be modified the whole case
+					System.out.println("Now performing: Swap two events for a customer.");
+					System.out.println("Please enter customer ID: (format example: TORC2345)");
+					String customerID = sc.nextLine().trim().toUpperCase();
+					
+					String managerCity = userID.substring(0,3);
+					String customerCity = customerID.substring(0,3);
+					if (!managerCity.equals(customerCity)) {
+						System.out.println("A manager can only operate for a customer in your own city.");
+						break;
+					}	
+
+					System.out.println("Please enter old event ID: (format example: MTLE100519)");
+					String oldEventID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter old event type: Conferences, Seminars, TradeShows");
+					String oldEventType = sc.nextLine().trim();
+					if ((!oldEventType.equals("Conferences")) && (!oldEventType.equals("Seminars") ) && (!oldEventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
+					
+					System.out.println("Please enter new event ID: (format example: MTLE100519)");
+					String newEventID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter new event type: Conferences, Seminars, TradeShows");
+					String newEventType = sc.nextLine().trim();
+					if ((!newEventType.equals("Conferences")) && (!newEventType.equals("Seminars") ) && (!newEventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
+					
+					clientLogger.info("manager swap two events for customer: manager id: "+userID+" customer id: "+customerID+"\n");
+					
+					ArrayList<String> returnMessage = new ArrayList<String>();
+					try {
+						returnMessage = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
+					} catch (java.rmi.RemoteException e) {
+						clientLogger.warning(e.getMessage()+"\n");
+					}
+					
+					String messageBookResult = returnMessage.get(0).trim();
+					String messageCancelResult = returnMessage.get(1).trim();
+					
+					if (messageBookResult.equals("IdenticalEvents")) {
+						System.out.println("You are trying to swap two identical events, no action is taken.");	
+					} else {
+						if(messageBookResult.equals("NoExist")) {
+							System.out.println("Fail. The new event you attempt to book doesn't exist.");
+							clientLogger.info("Fail. The new event you attempt to book doesn't exist."+"\n");
+						}else if (messageBookResult.equals("Full")){
+							System.out.println("Fail. This new event is fully booked.");
+							clientLogger.info("Fail. This new event is fully booked."+"\n");
+						} else if (messageBookResult.equals("NotUnique")) {
+							System.out.println("Fail. You have booked the new event in the past. A customer can not book more than one event with the same event id and same event type.");
+							clientLogger.info("Fail. A customer can not book more than one event with the same event id and same event type."+"\n");
+						} else if (messageBookResult.equals("Exceed3LimitInOtherCity")) {
+							System.out.println("Fail. A customer can only book at most 3 events from other cities overall in a month.");
+							clientLogger.info("Fail. A customer can only book at most 3 events from other cities overall in a month."+"\n");
+						} else if (messageBookResult.trim().equals("Success")) { // if book succeed							
+							if (messageCancelResult.equals("Success")) {
+								System.out.println("Successfully swapped two events for customer " + customerID 
+										+ ", old event ID: " + oldEventID + ", old event type: " + oldEventType 
+										+ ", new event ID: " + newEventID + ", new event type: " + newEventType);
+								clientLogger.info("Successfully swapped two events for customer " + customerID 
+										+ ", old event ID: " + oldEventID + ", old event type: " + oldEventType 
+										+ ", new event ID: " + newEventID + ", new event type: " + newEventType + "\n");
+							} else if (messageCancelResult.equals("EventNotExist")) {
+								System.out.println("The old event you want to cancel doesn't exist.");
+								clientLogger.info("The old event you want to cancel doesn't exist."+"\n");
+							} else if (messageCancelResult.equals("CustomerNeverBooked")) {
+								System.out.println("This customer never booked any event, can't cancel.");
+								clientLogger.info("This customer never booked any event, can't cancel."+"\n");
+							} else if (messageCancelResult.equals("ThisCustomerHasNotBookedThis")) {
+								System.out.println("This customer has never booked the old event.");
+								clientLogger.info("This customer has never booked the old event."+"\n");
+							} else if (messageCancelResult.equals("Capacity Error")) {
+								System.out.println("There is something wrong in the capacity record of the old event.");
+								clientLogger.info("There is something wrong in the capacity record of the old event."+"\n");
+							} else if (messageCancelResult.equals("SuccessButNoSuchCustomerIncBookingOtherCity")) {
+								System.out.println("Successfully swapped. But for cancelling, NoSuchCustomerIncBookingOtherCity.");
+								clientLogger.info("Successfully swapped. But for cancelling, NoSuchCustomerIncBookingOtherCity."+"\n");
+							} else if (messageCancelResult.equals("SuccessButNoSuchMonthIncBookingOtherCity")) {
+								System.out.println("Successfully swapped. But for cancelling, NoSuchMonthIncBookingOtherCity.");
+								clientLogger.info("Successfully swapped. But for cancelling, NoSuchMonthIncBookingOtherCity."+"\n");
+							} else if (messageCancelResult.equals("SuccessButWrongNumberOfBookingIncBookingOtherCity")) {
+								System.out.println("Successfully swapped. But for cancelling, WrongNumberOfBookingIncBookingOtherCity.");
+								clientLogger.info("Successfully swapped. But for cancelling, WrongNumberOfBookingIncBookingOtherCity."+"\n");
+							} else {
+								System.out.println("wrong message received.");
+								clientLogger.info("wrong message received."+"\n");
+							}
+						} 
+					}
+					break;
+				}
 				case 0:
 					break;
 				default:
@@ -462,6 +557,7 @@ public class DEMSClient {
 					+"1. Book an event \n"
 					+"2. Get your booking schedule in all cities  \n"
 					+"3. Cancel an event of yours \n"
+					+"4. Swap two events for you \n"
 					+"0. Quit"
 					);
 
@@ -618,6 +714,92 @@ public class DEMSClient {
 					} else {
 						System.out.println("wrong message received.");
 						clientLogger.info("wrong message received."+"\n");
+					}
+					break;
+				}
+				case 4:{
+					System.out.println("Now performing: Swap two events for you.");				
+					String customerID = userID;		
+
+					System.out.println("Please enter old event ID: (format example: MTLE100519)");
+					String oldEventID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter old event type: Conferences, Seminars, TradeShows");
+					String oldEventType = sc.nextLine().trim();
+					if ((!oldEventType.equals("Conferences")) && (!oldEventType.equals("Seminars") ) && (!oldEventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
+					
+					System.out.println("Please enter new event ID: (format example: MTLE100519)");
+					String newEventID = sc.nextLine().trim().toUpperCase();
+					System.out.println("Please enter new event type: Conferences, Seminars, TradeShows");
+					String newEventType = sc.nextLine().trim();
+					if ((!newEventType.equals("Conferences")) && (!newEventType.equals("Seminars") ) && (!newEventType.equals("TradeShows"))) {
+						System.out.println("Event type should only be one of the following 3: Conferences, Seminars, or TradeShows.");
+						break;
+					}
+					
+					clientLogger.info("manager swap two events for customer: manager id: "+userID+" customer id: "+customerID+"\n");
+					
+					ArrayList<String> returnMessage = new ArrayList<String>();
+					try {
+						returnMessage = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
+					} catch (java.rmi.RemoteException e) {
+						clientLogger.warning(e.getMessage()+"\n");
+					}
+					
+					String messageBookResult = returnMessage.get(0).trim();
+					String messageCancelResult = returnMessage.get(1).trim();
+					
+					if (messageBookResult.equals("IdenticalEvents")) {
+						System.out.println("You are trying to swap two identical events, no action is taken.");	
+					} else {
+						if(messageBookResult.equals("NoExist")) {
+							System.out.println("Fail. The new event you attempt to book doesn't exist.");
+							clientLogger.info("Fail. The new event you attempt to book doesn't exist."+"\n");
+						}else if (messageBookResult.equals("Full")){
+							System.out.println("Fail. This new event is fully booked.");
+							clientLogger.info("Fail. This new event is fully booked."+"\n");
+						} else if (messageBookResult.equals("NotUnique")) {
+							System.out.println("Fail. You have booked the new event in the past. A customer can not book more than one event with the same event id and same event type.");
+							clientLogger.info("Fail. A customer can not book more than one event with the same event id and same event type."+"\n");
+						} else if (messageBookResult.equals("Exceed3LimitInOtherCity")) {
+							System.out.println("Fail. A customer can only book at most 3 events from other cities overall in a month.");
+							clientLogger.info("Fail. A customer can only book at most 3 events from other cities overall in a month."+"\n");
+						} else if (messageBookResult.trim().equals("Success")) { // if book succeed							
+							if (messageCancelResult.equals("Success")) {
+								System.out.println("Successfully swapped two events for customer " + customerID 
+										+ ", old event ID: " + oldEventID + ", old event type: " + oldEventType 
+										+ ", new event ID: " + newEventID + ", new event type: " + newEventType);
+								clientLogger.info("Successfully swapped two events for customer " + customerID 
+										+ ", old event ID: " + oldEventID + ", old event type: " + oldEventType 
+										+ ", new event ID: " + newEventID + ", new event type: " + newEventType + "\n");
+							} else if (messageCancelResult.equals("EventNotExist")) {
+								System.out.println("The old event you want to cancel doesn't exist.");
+								clientLogger.info("The old event you want to cancel doesn't exist."+"\n");
+							} else if (messageCancelResult.equals("CustomerNeverBooked")) {
+								System.out.println("This customer never booked any event, can't cancel.");
+								clientLogger.info("This customer never booked any event, can't cancel."+"\n");
+							} else if (messageCancelResult.equals("ThisCustomerHasNotBookedThis")) {
+								System.out.println("This customer has never booked the old event.");
+								clientLogger.info("This customer has never booked the old event."+"\n");
+							} else if (messageCancelResult.equals("Capacity Error")) {
+								System.out.println("There is something wrong in the capacity record of the old event.");
+								clientLogger.info("There is something wrong in the capacity record of the old event."+"\n");
+							} else if (messageCancelResult.equals("SuccessButNoSuchCustomerIncBookingOtherCity")) {
+								System.out.println("Successfully swapped. But for cancelling, NoSuchCustomerIncBookingOtherCity.");
+								clientLogger.info("Successfully swapped. But for cancelling, NoSuchCustomerIncBookingOtherCity."+"\n");
+							} else if (messageCancelResult.equals("SuccessButNoSuchMonthIncBookingOtherCity")) {
+								System.out.println("Successfully swapped. But for cancelling, NoSuchMonthIncBookingOtherCity.");
+								clientLogger.info("Successfully swapped. But for cancelling, NoSuchMonthIncBookingOtherCity."+"\n");
+							} else if (messageCancelResult.equals("SuccessButWrongNumberOfBookingIncBookingOtherCity")) {
+								System.out.println("Successfully swapped. But for cancelling, WrongNumberOfBookingIncBookingOtherCity.");
+								clientLogger.info("Successfully swapped. But for cancelling, WrongNumberOfBookingIncBookingOtherCity."+"\n");
+							} else {
+								System.out.println("wrong message received.");
+								clientLogger.info("wrong message received."+"\n");
+							}
+						} 
 					}
 					break;
 				}

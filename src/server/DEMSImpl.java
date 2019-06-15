@@ -391,11 +391,11 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 						if ( ! (cBookingOtherCity.get(customerID).get(monthYear) >0)) { // the number of booking in this month in other cities should be at least 1
 							returnMessage = "SuccessButWrongNumberOfBookingIncBookingOtherCity";
 							serverLogger.info("SuccessButWrongNumberOfBookingIncBookingOtherCity"+"\n");
-						} else {
+						} else { // everything is perfect
 							int newBookingNumber = cBookingOtherCity.get(customerID).get(monthYear) -1;
 							cBookingOtherCity.get(customerID).put(monthYear, newBookingNumber);
-							returnMessage = "SuccessUpdatedAllRecords";
-							serverLogger.info("SuccessUpdatedAllRecords"+"\n");
+							returnMessage = "Success";
+							serverLogger.info("Success"+"\n");
 						}
 					}
 				}
@@ -403,6 +403,96 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		}		
 		System.out.println(returnMessage);
 		return returnMessage;
+	}
+	
+	public synchronized ArrayList<String> swapEvent(String customerID, String newEventID, String newEventType, String oldEventID, String oldEventType) {
+		ArrayList<String> returnMessage = new ArrayList<String>();
+		
+		serverLogger.info("request: swap two events"+"\n");
+		serverLogger.info("customer id: "+customerID+" new event id: "+newEventID+" new event type: "+newEventType
+				+" old event id: "+ oldEventID+" old event type: "+oldEventType +"\n");
+		
+		//check if inputs are two identical events, if so, no action, return
+		if ( (newEventID.equals(oldEventID) ) && ( newEventType.equals(oldEventType) )){
+			returnMessage.add("IdenticalEvents");
+			returnMessage.add("IdenticalEvents");
+			serverLogger.info("You are trying to swap two identical events, no action is taken."+"\n");
+			return returnMessage;
+		}
+		
+		boolean possibleConflictCBookingOtherCity = true;
+		
+		String customerCity = customerID.substring(0,3);
+		String newEventCity = newEventID.substring(0,3);
+		String oldEventCity = oldEventID.substring(0,3);
+		
+		String newMonthYear = newEventID.substring(6,10);
+		String oldMonthYear = oldEventID.substring(6,10);
+		
+		if (  (customerCity.equals(newEventCity) && customerCity.equals(oldEventCity) ) //case 1: if old event is local, new event is local
+				|| (customerCity.equals(newEventCity) && (!customerCity.equals(oldEventCity))) //case 2: if new event is local, old event is other city
+				|| ((!customerCity.equals(newEventCity)) && customerCity.equals(oldEventCity)) //case 3: if new event is other city, old event is local		
+			) {
+			possibleConflictCBookingOtherCity = false;
+		} else if ((!customerCity.equals(newEventCity)) && (!customerCity.equals(oldEventCity)))  { //case 4: if new event is other city, old event is other city
+			if ( ! newMonthYear.equals(oldMonthYear)) { // different monthYear in old and new event, no confliction in cBookingRecord
+				possibleConflictCBookingOtherCity = false;
+			} else { //same monthYear, possible confliction
+				if ( ! cBookingOtherCity.containsKey(customerID)) { //if this customer has ever booked in other cities
+					possibleConflictCBookingOtherCity = false;
+				} else {
+					if ( ! cBookingOtherCity.get(customerID).containsKey(newMonthYear)) { //newMonthYear=oldMonthYear
+						possibleConflictCBookingOtherCity = false;						
+					} else { // if this customer ever booked in this monthYear
+						if (cBookingOtherCity.get(customerID).get(newMonthYear) == 3) {
+							possibleConflictCBookingOtherCity = true;							
+						}		
+					}
+				}		
+			}
+		}	
+
+		ArrayList<String> bookEventResult = new ArrayList<String>();
+		String cancelEventResult = "";
+		
+		if (possibleConflictCBookingOtherCity) { //if 
+			int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
+			cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities-1);			
+		}
+		bookEventResult = bookEvent(customerID, newEventID, newEventType);
+		
+		if ( ! bookEventResult.get(0).equals("Success")) { //can't book the new event
+			returnMessage.add(bookEventResult.get(0));
+			returnMessage.add("");
+			serverLogger.info("Fail in swaping, because can't book new event. New event id: " + newEventID +" new event type: "+newEventType+"\n");
+			if (possibleConflictCBookingOtherCity) { //if has - 1
+				int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
+				cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities+1);			
+			}			
+			return returnMessage;
+		} else { //if book event is success
+			returnMessage.add(bookEventResult.get(0)); // the first element is "success"
+			cancelEventResult = cancelEvent(customerID, oldEventID, oldEventType);
+			
+			if (cancelEventResult.equals("Success")) { //book new and cancel old both succeed
+				returnMessage.add(cancelEventResult);
+				serverLogger.info("Succeed in booking new event and canceling old event."+"\n");
+				if (possibleConflictCBookingOtherCity) { //if has - 1
+					int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
+					cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities+1);			
+				}	
+				return returnMessage;
+			} else { // booked new, but failed in canceling old
+				returnMessage.add(cancelEventResult);
+				serverLogger.info("Fail in swaping, because can't cancel old event. Old event id: " + oldEventID +" old event type: "+oldEventType+"\n");
+				cancelEvent(customerID, newEventID, newEventType); //TODO: need to verify if succeed here? receive message???
+				if (possibleConflictCBookingOtherCity) { //if has - 1
+					int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
+					cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities+1);			
+				}
+				return returnMessage;				
+			}
+		}			
 	}
 
 	@Override
