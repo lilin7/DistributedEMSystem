@@ -9,6 +9,13 @@ import java.util.logging.*;
 
 import server.DEMSInterface;
 
+import org.omg.CORBA.Any;
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+
+import DEMS_CORBA.DEMSInterfaceCorba;
+import DEMS_CORBA.DEMSInterfaceCorbaHelper;
 /**
  * This class represents the object client for a distributed
  * object of class DEMS, which implements the remote interface
@@ -21,7 +28,8 @@ public class DEMSClient {
 	private String lookUpServerName;
 	private String role;
 	private String number;
-	private DEMSInterface obj;
+	//private DEMSInterface obj;
+	private DEMSInterfaceCorba obj;
 	private int portNumber;
 	private static FileHandler fh = null;
 	private static Logger clientLogger;
@@ -67,7 +75,7 @@ public class DEMSClient {
 			DEMSClient newclient = new DEMSClient();
 
 			newclient.setID(userID);
-			newclient.start();
+			newclient.start(args);
 			fh.close();
 		} 
 		catch (Exception e) {
@@ -80,7 +88,7 @@ public class DEMSClient {
 		this.userID = id;
 	}
 
-	public void start()throws Exception{
+	public void start(String[] args)throws Exception{
 		this.location = userID.substring(0,3).toUpperCase();
 		this.role = userID.substring(3,4).toUpperCase();
 		this.number = userID.substring(4).toUpperCase();
@@ -98,8 +106,13 @@ public class DEMSClient {
 			System.out.println("wrong id");
 		}
 
-		Registry registry = LocateRegistry.getRegistry(portNumber);
-		obj = (DEMSInterface) registry.lookup(lookUpServerName);
+		ORB orb = ORB.init(args, null);
+		//-ORBInitialPort 1050 -ORBInitialHost localhost
+		org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+		NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+		obj = (DEMSInterfaceCorba) DEMSInterfaceCorbaHelper.narrow(ncRef.resolve_str(lookUpServerName));
+		//Registry registry = LocateRegistry.getRegistry(portNumber);
+		//obj = (DEMSInterface) registry.lookup(lookUpServerName);
 
 		if(role.equals("M")){
 			managerOperate();
@@ -112,6 +125,7 @@ public class DEMSClient {
 
 	private void managerOperate() throws RemoteException{
 		int user_input;
+		Any any;
 		Scanner sc = new Scanner(System.in);
 		
 		do {
@@ -160,9 +174,10 @@ public class DEMSClient {
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					//handle RMI exception PER action, and try to bounce back for a better error handling.
 					try {
-						returnMessage = obj.addEvent(userID, eventID, eventType, bookingCapacity);
-					} catch (java.rmi.RemoteException e) {
-						System.out.println("java.rmi.RemoteException: "+e.getMessage());
+						any = obj.addEvent(userID, eventID, eventType, bookingCapacity);
+						returnMessage = (ArrayList<String>)any.extract_Value();
+					} catch (Exception e) {
+						System.out.println("Exception: "+e.getMessage());
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					
@@ -207,9 +222,10 @@ public class DEMSClient {
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					
 					try {
-						returnMessage = obj.removeEvent(userID, eventID, eventType);
-					} catch (java.rmi.RemoteException e) {
-						System.out.println("java.rmi.RemoteException: "+e.getMessage());
+						any = obj.removeEvent(userID, eventID, eventType);
+						returnMessage = (ArrayList<String>)any.extract_Value();
+					} catch (Exception e) {
+						System.out.println("Exception: "+e.getMessage());
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					
@@ -237,8 +253,9 @@ public class DEMSClient {
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					clientLogger.info("list event availability : user id: "+userID+" event type: "+eventType+"\n");
 					try {
-						returnMessage = obj.listEventAvailability(userID, eventType);
-					} catch (java.rmi.RemoteException e) {
+						any = obj.listEventAvailability(userID, eventType);
+						returnMessage = (ArrayList<String>)any.extract_Value();
+					} catch (Exception e) {
 						// look at the connection, if connection is dead ; exit
 						// if connection is okay, notify the client of the error but continue executing
 					}
@@ -282,8 +299,9 @@ public class DEMSClient {
 					clientLogger.info("book event for a customer : manager id: "+userID+" customer id: "+customerID+" event id: "+eventID+" event type: "+eventType+"\n");
 
 					try {			
-						returnMessage = obj.bookEvent(customerID, eventID, eventType);
-					} catch (java.rmi.RemoteException e) {
+						any = obj.bookEvent(customerID, eventID, eventType);
+						returnMessage = (ArrayList<String>)any.extract_Value();
+					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					
@@ -324,7 +342,8 @@ public class DEMSClient {
 					clientLogger.info("show booking schedule for customer : manager id: "+userID+" customer id: "+customerID+"\n");
 
 					//receive ArrayList<String> of info in all 3 cities. Elements like CTORE100519, need to decode, C means Conferences
-					returnMessage = obj.getBookingSchedule(customerID);	
+					any = obj.getBookingSchedule(customerID);
+					returnMessage = (ArrayList<String>)any.extract_Value();
 					if (returnMessage.size()==0) {
 						System.out.println("There is no booking record for customer " + customerID + ".");
 						clientLogger.info("There is no booking record for customer " + customerID + "."+"\n");
@@ -405,7 +424,7 @@ public class DEMSClient {
 					String returnMessage = "";
 					try {
 						returnMessage = obj.cancelEvent(customerID, eventID, eventType).trim();
-					} catch (java.rmi.RemoteException e) {
+					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					returnMessage=returnMessage.trim();
@@ -476,8 +495,9 @@ public class DEMSClient {
 					
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					try {
-						returnMessage = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
-					} catch (java.rmi.RemoteException e) {
+						any = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
+						returnMessage = (ArrayList<String>)any.extract_Value();
+					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					
@@ -549,7 +569,7 @@ public class DEMSClient {
 	private  void customerOperate() throws RemoteException{
 		int user_input;
 		Scanner sc = new Scanner(System.in);
-		
+		Any any;
 		do {
 			System.out.println(
 					"\nCurrent User: Customer " + userID + "\n"
@@ -581,8 +601,9 @@ public class DEMSClient {
 
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					try {			
-						returnMessage = obj.bookEvent(userID, eventID, eventType);
-					} catch (java.rmi.RemoteException e) {
+						any = obj.bookEvent(userID, eventID, eventType);
+						returnMessage = (ArrayList<String>)any.extract_Value();
+					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					
@@ -613,7 +634,8 @@ public class DEMSClient {
 					clientLogger.info("get booking schedule: customer id: "+userID+"\n");
 
 					//receive ArrayList<String> of info in all 3 cities. Elements like CTORE100519, need to decode, C means Conferences
-					returnMessage = obj.getBookingSchedule(userID);	
+					any = obj.getBookingSchedule(userID);
+					returnMessage = (ArrayList<String>)any.extract_Value();
 					System.out.println("Now printing booking schedule for customer " + userID + ":");
 					System.out.printf("%-15s %-18s %-15s", "City", "Event Type", "Event ID");
 					System.out.println();
@@ -680,7 +702,7 @@ public class DEMSClient {
 					String returnMessage = "";
 					try {
 						returnMessage = obj.cancelEvent(userID, eventID, eventType);
-					} catch (java.rmi.RemoteException e) {
+					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					
@@ -743,8 +765,9 @@ public class DEMSClient {
 					
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					try {
-						returnMessage = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
-					} catch (java.rmi.RemoteException e) {
+						any = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
+						returnMessage = (ArrayList<String>)any.extract_Value();
+					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
 					

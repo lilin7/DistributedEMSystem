@@ -1,0 +1,27 @@
+module DEMS_CORBA
+{
+    interface DEMSInterfaceCorba {
+
+
+	   any addEvent(in string MID,in string eventID, in string eventType, in long bookingCapacity);
+
+	   any removeEvent(in string MID, in string eventID, in string eventType);
+
+	   any listEventAvailability(in string MID, in string eventType);
+
+	   any bookEvent (in string customerID,in string eventID, in string eventType);
+
+	   any getBookingSchedule(in string customerID);
+
+	   string cancelEvent(in string customerID, in string eventID, in string eventType);
+
+	   any swapEvent(in string customerID, in string newEventID, in string newEventType,in string oldEventID, in string oldEventType);
+
+
+
+       //oneway void shutdown();
+};
+
+
+
+};

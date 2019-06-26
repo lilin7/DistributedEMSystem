@@ -1,6 +1,7 @@
 package server;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -14,11 +15,17 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
+
+import org.omg.CORBA.Any;
+import org.omg.CORBA.ORB;
+import DEMS_CORBA.DEMSInterfaceCorbaPOA;
+
+
 /**
  * This class implements the remote interface server.DEMSInterface.
  */
 
-public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
+public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 
 	// in sub-HashMap, key is event ID, value is a integer ArrayList, 
 	// element 0 is the booking capacity, element 1 is number already booked
@@ -51,6 +58,16 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 	private static FileHandler fh;
 	private static Logger serverLogger;
 
+	private ORB orb;
+
+	public void setORB(ORB orb_val){orb = orb_val;}
+
+	private Any returnAny(Object obj){
+		Any any = orb.create_any();
+		any.insert_Value((Serializable)obj);
+		return any;
+	}
+
 	public DEMSImpl(int firstRemoteUDPPort,int secondRemoteUDPPort,String serverName) throws Exception {
 		super();
 		mainHashMap.put("Conferences",conferencesSubHashMap);
@@ -60,9 +77,9 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		this.firstRemoteUDPPort = firstRemoteUDPPort;
 		this.secondRemoteUDPPort = secondRemoteUDPPort;
 
-		this.MTLRemoteUDPPortNumber = UDP_PORT_MTL;
-		this.OTWRemoteUDPPortNumber = UDP_PORT_OTW;
-		this.TORRemoteUDPPortNumber = UDP_PORT_TOR;
+		this.MTLRemoteUDPPortNumber = DEMSInterface.UDP_PORT_MTL;
+		this.OTWRemoteUDPPortNumber = DEMSInterface.UDP_PORT_OTW;
+		this.TORRemoteUDPPortNumber = DEMSInterface.UDP_PORT_TOR;
 
 		serverLogger = Logger.getLogger(serverName);
 
@@ -74,7 +91,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		serverLogger.info("log start"+"\n");		
 	}
 	
-	public synchronized ArrayList<String> addEvent(String MID,String eventID, String eventType, int bookingCapacity){		
+	public synchronized Any addEvent(String MID,String eventID, String eventType, int bookingCapacity){
 		ArrayList<String> returnMessage = new ArrayList<String>();		
 
 		serverLogger.info("request: add event"+"\n");
@@ -90,25 +107,25 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			returnMessage.add("Added");
 			returnMessage.add("New event added.");
 			serverLogger.info("New event added."+"\n");
-			return returnMessage;
+			return returnAny(returnMessage);
 		} else { // If an event already exists for same event type, the event manager can't add it again for the same event type but the new bookingCapacity is updated
 			ArrayList<Integer> tempCapArrayList = mainHashMap.get(eventType).get(eventID);
 			if (bookingCapacity < tempCapArrayList.get(1)) {
 				returnMessage.add("Fail");
 				returnMessage.add("Event already exist and the new booking capacity you entered is less than space already booked, updating event fails.");
 				serverLogger.info("Fail. Event already exist and the new booking capacity you entered is less than space already booked, updating event fails."+"\n");
-				return returnMessage;
+				return returnAny(returnMessage) ;
 			}
 			tempCapArrayList.set(0, bookingCapacity); //update the element 0 as the input new capacity
 			mainHashMap.get(eventType).put(eventID, tempCapArrayList);	
 			returnMessage.add("Updated");
 			returnMessage.add("Event exists, no new event added. Event capacity updated.");
 			serverLogger.info("Updated. Event exists, no new event added. Event capacity updated."+"\n");
-			return returnMessage;
+			return returnAny(returnMessage) ;
 		}
 	}
 
-	public synchronized ArrayList<String> removeEvent(String MID , String eventID, String eventType){
+	public synchronized Any removeEvent(String MID , String eventID, String eventType){
 		ArrayList<String> returnMessage = new ArrayList<String>();
 
 		serverLogger.info("request: remove event"+"\n");
@@ -118,7 +135,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			returnMessage.add("NoExist");
 			returnMessage.add("No such event exist. Nothing is removed.");
 			serverLogger.info("No such event exist. Nothing is removed."+"\n");
-			return returnMessage;			
+			return returnAny(returnMessage) ;
 		} else { //if an event exists
 			// TODO if need to inform related customer, write here, otherwise no action needed
 			mainHashMap.get(eventType).remove(eventID);
@@ -137,10 +154,10 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			returnMessage.add("Success");
 			returnMessage.add("Event " + eventID + " of " + eventType + " has been removed.");
 			serverLogger.info("Success. "+"Event " + eventID + " of " + eventType + " has been removed."+"\n");
-			return returnMessage;
+			return returnAny(returnMessage) ;
 		}
 	}
-	public synchronized ArrayList<String> listEventAvailability(String MID, String eventType){
+	public synchronized Any listEventAvailability(String MID, String eventType){
 		ArrayList<String> returnMessage = new ArrayList<String>(); // only return when combine info in all cities
 		
 		ArrayList<String> returnMessageOwnCity = new ArrayList<String>();
@@ -179,10 +196,10 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		returnMessage.addAll(returnMessageFirstOtherCity);
 		returnMessage.addAll(returnMessageSecondOtherCity);
 		serverLogger.info("information showed"+"\n");
-		return returnMessage;
+		return returnAny(returnMessage) ;
 	}
 	
-	public synchronized ArrayList<String> bookEvent(String customerID, String eventID, String eventType){
+	public synchronized Any bookEvent(String customerID, String eventID, String eventType){
 		ArrayList<String> returnMessage = new ArrayList<String>();
 
 		serverLogger.info("request: book event"+"\n");
@@ -195,14 +212,14 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 				returnMessage.add("NoExist");
 				returnMessage.add("The event you attampt to book doesn't exist.");
 				serverLogger.info("The event you attampt to book doesn't exist."+"\n");
-				return returnMessage;
+				return returnAny(returnMessage) ;
 			} else { // if the event exists
 				if (! (mainHashMap.get(eventType).get(eventID).get(0) 
 						> mainHashMap.get(eventType).get(eventID).get(1))) { // if the capacity left is not enough
 					returnMessage.add("Full");
 					returnMessage.add("This event is fully booked.");
 					serverLogger.info("This event is fully booked."+"\n");
-					return returnMessage;
+					return returnAny(returnMessage);
 				} else { // if there is still space to book	
 					if (!cBookingRecord.containsKey(customerID)) { //if this customer never booked before and doesn't exist in database
 						// add to total booking record
@@ -220,13 +237,13 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 						serverLogger.info("Success"+"\n");
 						serverLogger.info("You have successfully booked a space in:  \n"
 								+ "Event type: " + eventType + "; Event ID: " + eventID + "."+"\n");
-						return returnMessage;
+						return returnAny(returnMessage) ;
 					} else { //if this customer booked before and exists
 						if (cBookingRecord.get(customerID).contains(eventTypeAndID)) { // if the event type and ID is not unique
 							returnMessage.add("NotUnique");
 							returnMessage.add("A customer can not book more than one event with the same event id and same event type.");
 							serverLogger.info("A customer can not book more than one event with the same event id and same event type."+"\n");
-							return returnMessage;
+							return returnAny(returnMessage) ;
 						} else { // if the input event type and ID doesn't exist for this customer
 							// update total booking record (by adding this event)
 							cBookingRecord.get(customerID).add(eventTypeAndID);		
@@ -241,7 +258,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 							serverLogger.info("Success"+"\n");
 							serverLogger.info("You have successfully booked a space in:  \n"
 									+ "Event type: " + eventType + "; Event ID: " + eventID + "."+"\n");
-							return returnMessage;
+							return returnAny(returnMessage);
 						}
 					}
 				}
@@ -260,7 +277,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 						returnMessage.add("Exceed3LimitInOtherCity");
 						returnMessage.add("A customer can only book at most 3 events from other cities overall in a month.");
 						serverLogger.info("A customer can only book at most 3 events from other cities overall in a month."+"\n");
-						return returnMessage;
+						return returnAny(returnMessage) ;
 					} else { // if booking time less than 3, go UDP communicate with the target city
 						result = UDPCommunicationBookEvent(customerID, eventID, eventType);
 													
@@ -295,11 +312,11 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			}
 			// ------ end communicate with target other city:------	
 			returnMessage.add(result);			
-			return returnMessage;
+			return returnAny(returnMessage) ;
 		}
 	}
 
-	public synchronized ArrayList<String> getBookingSchedule(String customerID){
+	public synchronized Any getBookingSchedule(String customerID){
 		serverLogger.info("request: get booking schedule"+"\n");
 		serverLogger.info("customer id: "+customerID+"\n");
 		ArrayList<String> returnMessage = new ArrayList<String>(); // only return when combine info in all cities
@@ -330,7 +347,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			System.out.print(s + " ");
 		}
 		serverLogger.info("information showed"+"\n");
-		return  returnMessage;//return a ArrayList<String> to client, safe
+		return returnAny(returnMessage) ;//return a ArrayList<String> to client, safe
 	}
 	
 	public synchronized String cancelEvent(String customerID, String eventID, String eventType) {
@@ -405,7 +422,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		return returnMessage;
 	}
 	
-	public synchronized ArrayList<String> swapEvent(String customerID, String newEventID, String newEventType, String oldEventID, String oldEventType) {
+	public synchronized Any swapEvent(String customerID, String newEventID, String newEventType, String oldEventID, String oldEventType) {
 		ArrayList<String> returnMessage = new ArrayList<String>();
 		
 		serverLogger.info("request: swap two events"+"\n");
@@ -417,7 +434,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 			returnMessage.add("IdenticalEvents");
 			returnMessage.add("IdenticalEvents");
 			serverLogger.info("You are trying to swap two identical events, no action is taken."+"\n");
-			return returnMessage;
+			return returnAny(returnMessage) ;
 		}
 		
 		boolean possibleConflictCBookingOtherCity = true;
@@ -453,14 +470,15 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		}	
 
 		ArrayList<String> bookEventResult = new ArrayList<String>();
+		Any any;
 		String cancelEventResult = "";
 		
 		if (possibleConflictCBookingOtherCity) { //if 
 			int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
 			cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities-1);			
 		}
-		bookEventResult = bookEvent(customerID, newEventID, newEventType);
-		
+		any = bookEvent(customerID, newEventID, newEventType);
+		bookEventResult = (ArrayList<String>)any.extract_Value();
 		if ( ! bookEventResult.get(0).equals("Success")) { //can't book the new event
 			returnMessage.add(bookEventResult.get(0));
 			returnMessage.add("");
@@ -469,7 +487,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 				int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
 				cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities+1);			
 			}			
-			return returnMessage;
+			return returnAny(returnMessage) ;
 		} else { //if book event is success
 			returnMessage.add(bookEventResult.get(0)); // the first element is "success"
 			cancelEventResult = cancelEvent(customerID, oldEventID, oldEventType);
@@ -481,7 +499,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 					int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
 					cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities+1);			
 				}	
-				return returnMessage;
+				return returnAny(returnMessage) ;
 			} else { // booked new, but failed in canceling old
 				returnMessage.add(cancelEventResult);
 				serverLogger.info("Fail in swaping, because can't cancel old event. Old event id: " + oldEventID +" old event type: "+oldEventType+"\n");
@@ -490,19 +508,19 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 					int currentBookingOtherCities = cBookingOtherCity.get(customerID).get(newMonthYear);
 					cBookingOtherCity.get(customerID).put(newMonthYear, currentBookingOtherCities+1);			
 				}
-				return returnMessage;				
+				return returnAny(returnMessage) ;
 			}
 		}			
 	}
 
-	@Override
+
 	public ConcurrentHashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception {
 		serverLogger.info("request: list event availability for other server"+"\n");
 		ConcurrentHashMap<String, ArrayList<Integer>> eventSubHashMap = mainHashMap.get(eventType);
 		return eventSubHashMap;
 	}
 
-	@Override
+
 	//book event in my city upon request of other cities, no record needed in cBookingOtherCites in target city, it is managed by its own city
 	public synchronized ArrayList<String> bookEventForUDP(String customerID, String eventID, String eventType) throws Exception {
 		ArrayList<String> returnMessage = new ArrayList<String>();
@@ -589,7 +607,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		}			
 	}
 
-	@Override
+
 	// done this method
 	public synchronized ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception {
 		//get a ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
@@ -598,7 +616,7 @@ public class DEMSImpl extends UnicastRemoteObject implements DEMSInterface {
 		return returnMessageThisCity;
 	}
 
-	@Override
+
 	// cancel the event happens in this city for a customer in other city
 	public synchronized String cancelEventForUDP(String customerID, String eventID, String eventType) throws Exception {
 		String returnMessage;
