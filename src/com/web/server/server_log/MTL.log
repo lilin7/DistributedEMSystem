@@ -60,3 +60,69 @@
 七月 16, 2019 9:57:31 下午 com.web.service.impl.DEMSImplWeb <init>
 信息: log start
 
+七月 16, 2019 10:26:45 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 16, 2019 10:27:21 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: request: add event
+
+七月 16, 2019 10:27:21 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 3
+
+七月 16, 2019 10:27:21 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: New event added.
+
+七月 16, 2019 10:28:16 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: request: add event
+
+七月 16, 2019 10:28:16 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 2
+
+七月 16, 2019 10:28:16 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: Updated. Event exists, no new event added. Event capacity updated.
+
+七月 16, 2019 10:33:06 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 16, 2019 10:33:37 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: request: add event
+
+七月 16, 2019 10:33:37 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 2
+
+七月 16, 2019 10:33:37 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: New event added.
+
+七月 16, 2019 10:35:36 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: request: add event
+
+七月 16, 2019 10:35:36 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 2
+
+七月 16, 2019 10:35:36 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: Updated. Event exists, no new event added. Event capacity updated.
+
+七月 16, 2019 10:38:55 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 16, 2019 10:39:18 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: request: add event
+
+七月 16, 2019 10:39:18 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 2
+
+七月 16, 2019 10:39:18 下午 com.web.service.impl.DEMSImplWeb addEvent
+信息: New event added.
+
+七月 17, 2019 10:43:07 上午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 17, 2019 10:43:36 上午 com.web.service.impl.DEMSImplWeb addEvent
+信息: request: add event
+
+七月 17, 2019 10:43:36 上午 com.web.service.impl.DEMSImplWeb addEvent
+信息: manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 2
+
+七月 17, 2019 10:43:36 上午 com.web.service.impl.DEMSImplWeb addEvent
+信息: New event added.
+

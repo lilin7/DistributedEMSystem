@@ -3,6 +3,7 @@ package com.web.client;
 import java.util.ArrayList;
 
 
+import com.web.service.adaptorArrayList;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
@@ -10,6 +11,12 @@ import org.omg.CosNaming.NamingContextExtHelper;
 
 import com.web.DEMS_CORBA.DEMSInterfaceCorba;
 import com.web.DEMS_CORBA.DEMSInterfaceCorbaHelper;
+
+import com.web.service.DEMSInterfaceWeb;
+import java.net.URL;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
 
 public class SynchronizedMethodThread implements Runnable{
 
@@ -19,10 +26,16 @@ public class SynchronizedMethodThread implements Runnable{
     private String newEventID;
     private String newEventType;
     private String[] args;
-    private DEMSInterfaceCorba obj;
+    //private DEMSInterfaceCorba obj;
     // private DEMSInterface obj;
     //private int MTLportNumber = 1028;
     private String ServerName = "MTLServer";
+
+    private URL demsURL;
+    private QName demsQName;
+
+    public static DEMSInterfaceWeb obj;
+    private adaptorArrayList adaptor = new adaptorArrayList();
 
     public SynchronizedMethodThread(String customerID, String oldEventID, String oldEventType,String newEventID,String newEventType,String[] args){
         this.customerID = customerID;
@@ -37,17 +50,16 @@ public class SynchronizedMethodThread implements Runnable{
     @Override
     public void run() {
         try{
-            Any any;
+            this.demsURL = new URL("http://localhost:5050/DEMS?wsdl");
+            this.demsQName = new QName("http://impl.service.web.com/","DEMSImplWebService");
             ArrayList<String> returnMessage = new ArrayList<String>();
             //Registry registry = LocateRegistry.getRegistry(MTLportNumber);
             //obj = (DEMSInterface) registry.lookup(ServerName);
-            ORB orb = ORB.init(args, null);
-            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
-            obj = (DEMSInterfaceCorba) DEMSInterfaceCorbaHelper.narrow(ncRef.resolve_str(ServerName));
+            Service DEMS = Service.create(demsURL,demsQName);
+            obj = DEMS.getPort(DEMSInterfaceWeb.class);
 
-            any = obj.swapEvent(customerID, newEventID, newEventType ,oldEventID,oldEventType);
-            returnMessage = (ArrayList<String>)any.extract_Value();
+            ;
+            returnMessage = adaptor.unmarshal(obj.swapEvent(customerID, newEventID, newEventType ,oldEventID,oldEventType));
             String messageBookResult = returnMessage.get(0).trim();
             String messageCancelResult = returnMessage.get(1).trim();
             if (messageBookResult.equals("IdenticalEvents")) {

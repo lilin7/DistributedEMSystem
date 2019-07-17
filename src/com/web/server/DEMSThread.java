@@ -1,5 +1,6 @@
 package com.web.server;
 
+import com.web.service.adaptorArrayList;
 import com.web.service.impl.DEMSImplWeb;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.net.SocketException;
 public class DEMSThread extends Thread{
     private DEMSImplWeb stub;
     private int localUDPport;
+    private adaptorArrayList adaptor = new adaptorArrayList();
 
     public DEMSThread(DEMSImplWeb impl, int localudpport){
         this.stub = impl;
@@ -63,7 +65,7 @@ public class DEMSThread extends Thread{
                 	String eventID = requestSplit[2];
                 	String eventType = requestSplit[3];
                 	              	
-                	ArrayList<String> bookEventResult = stub.bookEventForUDP(customerID, eventID, eventType);               	
+                	ArrayList<String> bookEventResult = adaptor.unmarshal(stub.bookEventForUDP(customerID, eventID, eventType));
                 	re = bookEventResult.get(0);  //e.g. "Success" "NotUnique" "Exceed3LimitInOtherCity"       
                 	
                 } else if (action.equals("getBookingSchedule")){  //done inside this else if condition
@@ -73,7 +75,7 @@ public class DEMSThread extends Thread{
                 	//get an ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
                 	              	
                 	if (stub.getcBookingRecord().containsKey(customerID)) { //if this customer has record in that city
-                		ArrayList<String> eventTypeAndIDAL = stub.getBookingScheduleForUDP(customerID);
+                		ArrayList<String> eventTypeAndIDAL = adaptor.unmarshal(stub.getBookingScheduleForUDP(customerID));
                     	
                     	StringBuffer sb = new StringBuffer(); //use StringBuffer to avoid creating too much String
                     	for (String s : eventTypeAndIDAL) {

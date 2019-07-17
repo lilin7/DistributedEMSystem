@@ -20,25 +20,26 @@ public interface DEMSInterfaceWeb {
     public final int UDP_PORT_OTW = 6666;
     public final int UDP_PORT_TOR = 7777;
 
-    public ArrayList<String> addEvent(String MID, String eventID, String eventType, int bookingCapacity);
 
-    public ArrayList<String> removeEvent(String MID, String eventID, String eventType);
+    public String[] addEvent(String MID, String eventID, String eventType, int bookingCapacity);
 
-    public ArrayList<String> listEventAvailability(String MID, String eventType);
+    public String[] removeEvent(String MID, String eventID, String eventType);
 
-    public ArrayList<String> bookEvent (String customerID,String eventID, String eventType);
+    public String[] listEventAvailability(String MID, String eventType);
 
-    public ArrayList<String> getBookingSchedule(String customerID);
+    public String[] bookEvent (String customerID,String eventID, String eventType);
+
+    public String[] getBookingSchedule(String customerID);
 
     public String cancelEvent(String customerID, String eventID, String eventType);
 
-    public ArrayList<String> swapEvent(String customerID, String newEventID, String newEventType, String oldEventID, String oldEventType);
+    public String[] swapEvent(String customerID, String newEventID, String newEventType, String oldEventID, String oldEventType);
 
     public ConcurrentHashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception;
 
-    public ArrayList<String> bookEventForUDP(String customerID,String eventID,String eventType) throws Exception;
+    public String[] bookEventForUDP(String customerID,String eventID,String eventType) throws Exception;
 
-    public ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception;
+    public String[] getBookingScheduleForUDP(String customerID) throws Exception;
 
     public String cancelEventForUDP(String customerID, String eventID, String eventType) throws Exception;
 

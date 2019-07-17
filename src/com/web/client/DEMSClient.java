@@ -5,6 +5,7 @@ import java.util.Scanner;
 import java.util.logging.*;
 
 import com.web.service.DEMSInterfaceWeb;
+import com.web.service.adaptorArrayList;
 
 
 import java.net.URL;
@@ -32,6 +33,9 @@ public class DEMSClient {
 
 	private URL demsURL;
 	private QName demsQName;
+
+	private adaptorArrayList adaptor = new adaptorArrayList();
+
 
 	public static DEMSInterfaceWeb obj;
 
@@ -182,7 +186,8 @@ public class DEMSClient {
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					//handle RMI exception PER action, and try to bounce back for a better error handling.
 					try {
-						returnMessage = obj.addEvent(userID, eventID, eventType, bookingCapacity);
+
+						returnMessage = adaptor.unmarshal(obj.addEvent(userID, eventID, eventType, bookingCapacity)) ;
 					} catch (Exception e) {
 						System.out.println("java.rmi.RemoteException: "+e.getMessage());
 						clientLogger.warning(e.getMessage()+"\n");
@@ -229,7 +234,7 @@ public class DEMSClient {
 					ArrayList<String> returnMessage = new ArrayList<String>();
 
 					try {
-						returnMessage = obj.removeEvent(userID, eventID, eventType);
+						returnMessage = adaptor.unmarshal( obj.removeEvent(userID, eventID, eventType));
 					} catch (Exception e) {
 						System.out.println("java.rmi.RemoteException: "+e.getMessage());
 						clientLogger.warning(e.getMessage()+"\n");
@@ -259,7 +264,7 @@ public class DEMSClient {
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					clientLogger.info("list event availability : user id: "+userID+" event type: "+eventType+"\n");
 					try {
-						returnMessage = obj.listEventAvailability(userID, eventType);
+						returnMessage = adaptor.unmarshal(obj.listEventAvailability(userID, eventType)) ;
 					} catch (Exception e) {
 						// look at the connection, if connection is dead ; exit
 						// if connection is okay, notify the com.web.client of the error but continue executing
@@ -304,7 +309,7 @@ public class DEMSClient {
 					clientLogger.info("book event for a customer : manager id: "+userID+" customer id: "+customerID+" event id: "+eventID+" event type: "+eventType+"\n");
 
 					try {
-						returnMessage = obj.bookEvent(customerID, eventID, eventType);
+						returnMessage = adaptor.unmarshal(obj.bookEvent(customerID, eventID, eventType)) ;
 					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
@@ -346,7 +351,7 @@ public class DEMSClient {
 					clientLogger.info("show booking schedule for customer : manager id: "+userID+" customer id: "+customerID+"\n");
 
 					//receive ArrayList<String> of info in all 3 cities. Elements like CTORE100519, need to decode, C means Conferences
-					returnMessage = obj.getBookingSchedule(customerID);
+					returnMessage = adaptor.unmarshal(obj.getBookingSchedule(customerID));
 					if (returnMessage.size()==0) {
 						System.out.println("There is no booking record for customer " + customerID + ".");
 						clientLogger.info("There is no booking record for customer " + customerID + "."+"\n");
@@ -498,7 +503,7 @@ public class DEMSClient {
 
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					try {
-						returnMessage = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
+						returnMessage = adaptor.unmarshal(obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType));
 					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
@@ -603,7 +608,7 @@ public class DEMSClient {
 
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					try {
-						returnMessage = obj.bookEvent(userID, eventID, eventType);
+						returnMessage = adaptor.unmarshal(obj.bookEvent(userID, eventID, eventType));
 					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
@@ -635,7 +640,7 @@ public class DEMSClient {
 					clientLogger.info("get booking schedule: customer id: "+userID+"\n");
 
 					//receive ArrayList<String> of info in all 3 cities. Elements like CTORE100519, need to decode, C means Conferences
-					returnMessage = obj.getBookingSchedule(userID);
+					returnMessage = adaptor.unmarshal(obj.getBookingSchedule(userID));
 					System.out.println("Now printing booking schedule for customer " + userID + ":");
 					System.out.printf("%-15s %-18s %-15s", "City", "Event Type", "Event ID");
 					System.out.println();
@@ -765,7 +770,7 @@ public class DEMSClient {
 
 					ArrayList<String> returnMessage = new ArrayList<String>();
 					try {
-						returnMessage = obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType);
+						returnMessage = adaptor.unmarshal(obj.swapEvent(customerID, newEventID, newEventType, oldEventID, oldEventType));
 					} catch (Exception e) {
 						clientLogger.warning(e.getMessage()+"\n");
 					}
