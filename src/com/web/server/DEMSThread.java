@@ -1,22 +1,20 @@
-package server;
+package com.web.server;
 
-import java.rmi.registry.Registry;
+import com.web.service.impl.DEMSImplWeb;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.rmi.registry.LocateRegistry;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 
 public class DEMSThread extends Thread{
-    private DEMSImpl stub;
+    private DEMSImplWeb stub;
     private int localUDPport;
 
-    public DEMSThread(DEMSImpl impl,int localudpport){
+    public DEMSThread(DEMSImplWeb impl, int localudpport){
         this.stub = impl;
         this.localUDPport = localudpport;
     }
@@ -32,7 +30,7 @@ public class DEMSThread extends Thread{
             	byte[] buffer = new byte[1000];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length); 
                 aSocket.receive(request); //e.g. TORC1234 getBookingSchedule
-                System.out.println("Request received from client: " + new String(request.getData()));
+                System.out.println("Request received from com.web.client: " + new String(request.getData()));
                 String re = "";
                 String requestToString = new String(request.getData()); //receive message from source city
                 String[] requestSplit = requestToString.split("\\s+");

@@ -1,8 +1,7 @@
-package server;
+package com.web.server;
 
 import java.rmi.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 /**
  * This is a remote interface.

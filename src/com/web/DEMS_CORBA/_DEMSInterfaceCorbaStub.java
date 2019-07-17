@@ -1,14 +1,14 @@
-package DEMS_CORBA;
+package com.web.DEMS_CORBA;
 
 
 /**
-* DEMS_CORBA/_DEMSInterfaceCorbaStub.java .
+* com.web.DEMS_CORBA/_DEMSInterfaceCorbaStub.java .
 * 由IDL-to-Java 编译器 (可移植), 版本 "3.2"生成
-* 从F:/xuexi/corba/src/server/DEMSidl.idl
+* 从F:/xuexi/corba/src/com.web.server/DEMSidl.idl
 * 2019年6月26日 星期三 下午05时43分05秒 EDT
 */
 
-public class _DEMSInterfaceCorbaStub extends org.omg.CORBA.portable.ObjectImpl implements DEMS_CORBA.DEMSInterfaceCorba
+public class _DEMSInterfaceCorbaStub extends org.omg.CORBA.portable.ObjectImpl implements com.web.DEMS_CORBA.DEMSInterfaceCorba
 {
 
   public org.omg.CORBA.Any addEvent (String MID, String eventID, String eventType, int bookingCapacity)
@@ -167,7 +167,7 @@ public class _DEMSInterfaceCorbaStub extends org.omg.CORBA.portable.ObjectImpl i
 
   // Type-specific CORBA::Object operations
   private static String[] __ids = {
-    "IDL:DEMS_CORBA/DEMSInterfaceCorba:1.0"};
+    "IDL:com.web.DEMS_CORBA/DEMSInterfaceCorba:1.0"};
 
   public String[] _ids ()
   {

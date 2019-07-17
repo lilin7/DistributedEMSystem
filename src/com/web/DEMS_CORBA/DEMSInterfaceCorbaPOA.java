@@ -1,15 +1,15 @@
-package DEMS_CORBA;
+package com.web.DEMS_CORBA;
 
 
 /**
-* DEMS_CORBA/DEMSInterfaceCorbaPOA.java .
+* com.web.DEMS_CORBA/DEMSInterfaceCorbaPOA.java .
 * 由IDL-to-Java 编译器 (可移植), 版本 "3.2"生成
-* 从F:/xuexi/corba/src/server/DEMSidl.idl
+* 从F:/xuexi/corba/src/com.web.server/DEMSidl.idl
 * 2019年6月26日 星期三 下午05时43分05秒 EDT
 */
 
 public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Servant
- implements DEMS_CORBA.DEMSInterfaceCorbaOperations, org.omg.CORBA.portable.InvokeHandler
+ implements com.web.DEMS_CORBA.DEMSInterfaceCorbaOperations, org.omg.CORBA.portable.InvokeHandler
 {
 
   // Constructors
@@ -37,7 +37,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
 
     switch (__method.intValue ())
     {
-       case 0:  // DEMS_CORBA/DEMSInterfaceCorba/addEvent
+       case 0:  // com.web.DEMS_CORBA/DEMSInterfaceCorba/addEvent
        {
          String MID = in.read_string ();
          String eventID = in.read_string ();
@@ -50,7 +50,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
          break;
        }
 
-       case 1:  // DEMS_CORBA/DEMSInterfaceCorba/removeEvent
+       case 1:  // com.web.DEMS_CORBA/DEMSInterfaceCorba/removeEvent
        {
          String MID = in.read_string ();
          String eventID = in.read_string ();
@@ -62,7 +62,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
          break;
        }
 
-       case 2:  // DEMS_CORBA/DEMSInterfaceCorba/listEventAvailability
+       case 2:  // com.web.DEMS_CORBA/DEMSInterfaceCorba/listEventAvailability
        {
          String MID = in.read_string ();
          String eventType = in.read_string ();
@@ -73,7 +73,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
          break;
        }
 
-       case 3:  // DEMS_CORBA/DEMSInterfaceCorba/bookEvent
+       case 3:  // com.web.DEMS_CORBA/DEMSInterfaceCorba/bookEvent
        {
          String customerID = in.read_string ();
          String eventID = in.read_string ();
@@ -85,7 +85,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
          break;
        }
 
-       case 4:  // DEMS_CORBA/DEMSInterfaceCorba/getBookingSchedule
+       case 4:  // com.web.DEMS_CORBA/DEMSInterfaceCorba/getBookingSchedule
        {
          String customerID = in.read_string ();
          org.omg.CORBA.Any $result = null;
@@ -95,7 +95,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
          break;
        }
 
-       case 5:  // DEMS_CORBA/DEMSInterfaceCorba/cancelEvent
+       case 5:  // com.web.DEMS_CORBA/DEMSInterfaceCorba/cancelEvent
        {
          String customerID = in.read_string ();
          String eventID = in.read_string ();
@@ -107,7 +107,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
          break;
        }
 
-       case 6:  // DEMS_CORBA/DEMSInterfaceCorba/swapEvent
+       case 6:  // com.web.DEMS_CORBA/DEMSInterfaceCorba/swapEvent
        {
          String customerID = in.read_string ();
          String newEventID = in.read_string ();
@@ -130,7 +130,7 @@ public abstract class DEMSInterfaceCorbaPOA extends org.omg.PortableServer.Serva
 
   // Type-specific CORBA::Object operations
   private static String[] __ids = {
-    "IDL:DEMS_CORBA/DEMSInterfaceCorba:1.0"};
+    "IDL:com.web.DEMS_CORBA/DEMSInterfaceCorba:1.0"};
 
   public String[] _all_interfaces (org.omg.PortableServer.POA poa, byte[] objectId)
   {

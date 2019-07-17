@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2019-06-05T16:34:06</date>
+  <millis>1559766846474</millis>
+  <sequence>0</sequence>
+  <logger>MTLM1234</logger>
+  <level>INFO</level>
+  <class>com.web.client.DEMSClient</class>
+  <method>main</method>
+  <thread>1</thread>
+  <message>log start</message>
+</record>
+<record>
+  <date>2019-06-05T16:34:28</date>
+  <millis>1559766868473</millis>
+  <sequence>1</sequence>
+  <logger>MTLM1234</logger>
+  <level>INFO</level>
+  <class>com.web.client.DEMSClient</class>
+  <method>managerOperate</method>
+  <thread>1</thread>
+  <message>add event : user: MTLM1234 event id: MTLE100519 event type: Seminars event capacity: 5</message>
+</record>
+<record>
+  <date>2019-06-05T16:34:28</date>
+  <millis>1559766868487</millis>
+  <sequence>2</sequence>
+  <logger>MTLM1234</logger>
+  <level>INFO</level>
+  <class>com.web.client.DEMSClient</class>
+  <method>managerOperate</method>
+  <thread>1</thread>
+  <message>Successfully add an event. 
+ Event ID: MTLE100519; Event type: Seminars; Booking capacity: 5</message>
+</record>
+</log>
+七月 16, 2019 8:05:23 下午 com.web.client.DEMSClient main
+信息: log start
+
+七月 16, 2019 8:05:34 下午 com.web.client.DEMSClient main
+警告: 无法访问位于以下位置的 WSDL: http://localhost5050/DEMS?wsdl。该操作失败并显示: 
+	localhost5050。
+
+七月 16, 2019 9:53:53 下午 com.web.client.DEMSClient main
+信息: log start
+
+七月 16, 2019 9:54:05 下午 com.web.client.DEMSClient main
+警告: 无法访问位于以下位置的 WSDL: http://localhost5050/DEMS?wsdl。该操作失败并显示: 
+	localhost5050。
+
+七月 16, 2019 9:55:32 下午 com.web.client.DEMSClient main
+信息: log start
+
+七月 16, 2019 9:55:32 下午 com.web.client.DEMSClient main
+警告: {http://impl.service.web.com/}ImplementationServiceMTL不是有效服务。有效服务为: {http://impl.service.web.com/}DEMSImplWebService
+
+七月 16, 2019 9:57:45 下午 com.web.client.DEMSClient main
+信息: log start
+

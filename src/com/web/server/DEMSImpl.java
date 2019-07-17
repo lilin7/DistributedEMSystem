@@ -1,4 +1,4 @@
-package server;
+package com.web.server;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -6,11 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.rmi.*;
-import java.rmi.server.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,11 +14,11 @@ import java.util.logging.*;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
-import DEMS_CORBA.DEMSInterfaceCorbaPOA;
+import com.web.DEMS_CORBA.DEMSInterfaceCorbaPOA;
 
 
 /**
- * This class implements the remote interface server.DEMSInterface.
+ * This class implements the remote interface com.web.server.DEMSInterface.
  */
 
 public class DEMSImpl extends DEMSInterfaceCorbaPOA {
@@ -84,7 +80,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 		serverLogger = Logger.getLogger(serverName);
 
 		serverLogger.setUseParentHandlers(true);
-		fh = new FileHandler("src/server/server_log/"+serverName+".log",true);
+		fh = new FileHandler("src/com.web.server/server_log/"+serverName+".log",true);
 		fh.setFormatter(new SimpleFormatter());
 		serverLogger.addHandler(fh);
 
@@ -337,7 +333,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 		// send message to target city 2, get reply, put reply to returnMessageFirstOtherCity
 		returnMessageSecondOtherCity = UDPCommunicationGetBookingSchedule(customerID, secondRemoteUDPPort);
 			
-		// combine info in all 3 cities, and reply to client (return a ArrayList<String>, safe	
+		// combine info in all 3 cities, and reply to com.web.client (return a ArrayList<String>, safe
 		returnMessage.addAll(returnMessageOwnCity);
 		returnMessage.addAll(returnMessageFirstOtherCity);
 		returnMessage.addAll(returnMessageSecondOtherCity);
@@ -347,7 +343,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			System.out.print(s + " ");
 		}
 		serverLogger.info("information showed"+"\n");
-		return returnAny(returnMessage) ;//return a ArrayList<String> to client, safe
+		return returnAny(returnMessage) ;//return a ArrayList<String> to com.web.client, safe
 	}
 	
 	public synchronized String cancelEvent(String customerID, String eventID, String eventType) {
@@ -515,7 +511,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 
 
 	public ConcurrentHashMap<String, ArrayList<Integer>> listEventAvailabilityForUDP(String eventType) throws Exception {
-		serverLogger.info("request: list event availability for other server"+"\n");
+		serverLogger.info("request: list event availability for other com.web.server"+"\n");
 		ConcurrentHashMap<String, ArrayList<Integer>> eventSubHashMap = mainHashMap.get(eventType);
 		return eventSubHashMap;
 	}
@@ -528,7 +524,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 		eventType = eventType.trim();
 		eventID = eventID.trim();
 
-		serverLogger.info("request: book event for other server"+"\n");
+		serverLogger.info("request: book event for other com.web.server"+"\n");
 
 		String eventTypeAndID = eventType.substring(0,1) + "" + eventID;
 		
@@ -611,7 +607,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 	// done this method
 	public synchronized ArrayList<String> getBookingScheduleForUDP(String customerID) throws Exception {
 		//get a ArrayList<String>, elements are: CTORA100519, CTORE100519, ... (first letter is event type)
-		serverLogger.info("request: get booking schedule for other server"+"\n");
+		serverLogger.info("request: get booking schedule for other com.web.server"+"\n");
 		ArrayList<String> returnMessageThisCity = cBookingRecord.get(customerID); 
 		return returnMessageThisCity;
 	}
@@ -624,7 +620,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 		eventID = eventID.trim();
 		eventType = eventType.trim();		
 		String eventTypeAndID = eventType.substring(0,1) + "" + eventID; //create the info like "CTORA100519"
-		serverLogger.info("request: cancel event for other server"+"\n");
+		serverLogger.info("request: cancel event for other com.web.server"+"\n");
 		 
 		if (! mainHashMap.get(eventType).containsKey(eventID)) { // if this event id of this type doesn't exist
 			returnMessage = "EventNotExist";
@@ -677,7 +673,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
 			InetAddress aHost = InetAddress.getByName("localhost");
 
-			int serverPort = targetUDPPortNumber;// defined for every server already in server classes
+			int serverPort = targetUDPPortNumber;// defined for every com.web.server already in com.web.server classes
 			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
 			aSocket.send(request);//request sent out
 			System.out.println("Request message sent : "+ new String(request.getData()));
@@ -690,7 +686,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
 			result = result.trim();
-			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes		
+			System.out.println("Reply received from the com.web.server is: "+ result);//print reply message after converting it to a string from bytes
 		}
 		catch(SocketException e){
 			System.out.println("Socket: "+e.getMessage());
@@ -731,7 +727,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
 			InetAddress aHost = InetAddress.getByName("localhost");
 
-			int serverPort = targetUDPPortNumber;// defined for every server already in server classes
+			int serverPort = targetUDPPortNumber;// defined for every com.web.server already in com.web.server classes
 			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
 			aSocket.send(request);//request sent out
 			System.out.println("Request message sent : "+ new String(request.getData()));
@@ -744,7 +740,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
 			result = result.trim();
-			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes		
+			System.out.println("Reply received from the com.web.server is: "+ result);//print reply message after converting it to a string from bytes
 		}
 		catch(SocketException e){
 			System.out.println("Socket: "+e.getMessage());
@@ -774,7 +770,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
 			InetAddress aHost = InetAddress.getByName("localhost");
 
-			int serverPort = remoteUDPPort;// defined for every server already in server classes
+			int serverPort = remoteUDPPort;// defined for every com.web.server already in com.web.server classes
 			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
 			aSocket.send(request);//request sent out
 			System.out.println("Request message sent : "+ new String(request.getData()));
@@ -787,7 +783,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
 			result = result.trim();
-			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes	
+			System.out.println("Reply received from the com.web.server is: "+ result);//print reply message after converting it to a string from bytes
 			if (!result.trim().equals("")) {						
 				String[] replyArray = result.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			
 				for (String s : replyArray) {
@@ -823,7 +819,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			byte [] message = messageToSend.getBytes(); //message to be passed is stored in byte array
 			InetAddress aHost = InetAddress.getByName("localhost");
 
-			int serverPort = remoteUDPPort;// defined for every server already in server classes
+			int serverPort = remoteUDPPort;// defined for every com.web.server already in com.web.server classes
 			DatagramPacket request = new DatagramPacket(message, messageToSend.length(), aHost, serverPort);//request packet ready
 			aSocket.send(request);//request sent out
 			System.out.println("Request message sent : "+ new String(request.getData()));
@@ -836,7 +832,7 @@ public class DEMSImpl extends DEMSInterfaceCorbaPOA {
 			aSocket.receive(reply);//reply received and will populate reply packet now.
 			result = new String(reply.getData());
 			result = result.trim();
-			System.out.println("Reply received from the server is: "+ result);//print reply message after converting it to a string from bytes				
+			System.out.println("Reply received from the com.web.server is: "+ result);//print reply message after converting it to a string from bytes
 			
 			if (!result.trim().equals("")) {						
 				String[] replyArray = result.split("\\s+"); //split the received info (e.g. "CTORA100519 CTORE100519 ..." (first letter is event type)			

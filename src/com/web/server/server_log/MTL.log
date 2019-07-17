@@ -7,7 +7,7 @@
   <sequence>0</sequence>
   <logger>MTL</logger>
   <level>INFO</level>
-  <class>server.DEMSImpl</class>
+  <class>com.web.server.DEMSImpl</class>
   <method>&lt;init&gt;</method>
   <thread>1</thread>
   <message>log start</message>
@@ -18,7 +18,7 @@
   <sequence>1</sequence>
   <logger>MTL</logger>
   <level>INFO</level>
-  <class>server.DEMSImpl</class>
+  <class>com.web.server.DEMSImpl</class>
   <method>addEvent</method>
   <thread>21</thread>
   <message>request: add event</message>
@@ -29,7 +29,7 @@
   <sequence>2</sequence>
   <logger>MTL</logger>
   <level>INFO</level>
-  <class>server.DEMSImpl</class>
+  <class>com.web.server.DEMSImpl</class>
   <method>addEvent</method>
   <thread>21</thread>
   <message>manager id: MTLM1234 event id: MTLE100519 event type: Seminars capacity: 5</message>
@@ -40,8 +40,23 @@
   <sequence>3</sequence>
   <logger>MTL</logger>
   <level>INFO</level>
-  <class>server.DEMSImpl</class>
+  <class>com.web.server.DEMSImpl</class>
   <method>addEvent</method>
   <thread>21</thread>
   <message>New event added.</message>
 </record>
+七月 16, 2019 8:04:55 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 16, 2019 8:10:31 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 16, 2019 9:53:00 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 16, 2019 9:55:19 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+
+七月 16, 2019 9:57:31 下午 com.web.service.impl.DEMSImplWeb <init>
+信息: log start
+

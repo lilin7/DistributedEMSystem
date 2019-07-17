@@ -1,4 +1,4 @@
-package client;
+package com.web.client;
 
 public class ThreadTest {
 

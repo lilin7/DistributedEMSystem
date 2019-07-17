@@ -1,14 +1,6 @@
-package client;
+package com.web.client;
 
-import java.io.*;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
-import java.util.Scanner;
-
-import server.DEMSInterface;
-
 
 
 import org.omg.CORBA.Any;
@@ -16,8 +8,8 @@ import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
 
-import DEMS_CORBA.DEMSInterfaceCorba;
-import DEMS_CORBA.DEMSInterfaceCorbaHelper;
+import com.web.DEMS_CORBA.DEMSInterfaceCorba;
+import com.web.DEMS_CORBA.DEMSInterfaceCorbaHelper;
 
 public class SynchronizedMethodThread implements Runnable{
 
